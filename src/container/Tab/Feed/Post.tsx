@@ -66,6 +66,17 @@ const Post = ({navigation}: IPost) => {
             profile_image_url: authenticatedUser.photoURL,
             timestamp: new Date(),
             user_id: authenticatedUser.uid,
+            comments_count: 0,
+            reactions_count: 0,
+            reaction_code_count: {
+              1: 0,
+              2: 0,
+              3: 0,
+              4: 0,
+              5: 0,
+              6: 0 ,
+            },
+            reactions: []
           }).then(() => navigation.navigate('Feed'));
         });
       });
@@ -77,6 +88,17 @@ const Post = ({navigation}: IPost) => {
         profile_image_url: authenticatedUser.photoURL,
         timestamp: new Date(),
         user_id: authenticatedUser.uid,
+        comments_count: 0,
+        reactions_count: 0,
+        reaction_code_count: {
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0,
+          5: 0,
+          6: 0 ,
+        },
+        reactions: []
       }).then(() => navigation.navigate('Feed'));
     }
   };
