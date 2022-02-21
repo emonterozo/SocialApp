@@ -8,6 +8,7 @@ import {
   Avatar,
   Paragraph,
   Caption,
+  Title,
 } from 'react-native-paper';
 import {
   collection,
@@ -16,10 +17,13 @@ import {
   onSnapshot,
   setDoc,
   doc,
+  updateDoc,
+  getDoc,
 } from 'firebase/firestore';
 import moment from 'moment';
 import {isEmpty} from 'lodash';
 
+import {CommentsRegular} from '../../../assets/svg';
 import {db} from '../../../config/firebase';
 import GlobalContext from '../../../config/context';
 
@@ -49,7 +53,17 @@ const Comment = ({navigation, route}: IComment) => {
         timestamp: new Date(),
         user_id: authenticatedUser.uid,
       },
-    ).then(() => setText(''));
+    ).then(async () => {
+      setText('')
+      const feedRef = doc(db, 'feed', collectionId);
+
+      const feedSnap = await getDoc(feedRef);
+      const data = feedSnap.data()
+      
+      updateDoc(feedRef, {
+        comments_count: data?.comments_count + 1
+      }).then(() => console.log('success'));
+    });
   };
 
   useEffect(() => {
@@ -93,7 +107,17 @@ const Comment = ({navigation, route}: IComment) => {
       </Portal>
       <View style={styles.top}>
         <View style={styles.topContent}>
-          <FlatList data={comments} renderItem={renderComment} />
+          <FlatList contentContainerStyle={comments.length <= 0 && styles.empty} data={comments} renderItem={renderComment} ListEmptyComponent={
+            <View style={{alignItems: 'center'}}>
+              <CommentsRegular
+                height={100}
+                width={100}
+                color="#777777" 
+              />
+              <Title>No comment yet</Title>
+              <Caption>Be the first to comment.</Caption>
+            </View>
+          } />
         </View>
       </View>
       <View style={styles.bottom}>
@@ -149,6 +173,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     paddingHorizontal: 10,
     fontWeight: 'bold',
+  },
+  empty: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

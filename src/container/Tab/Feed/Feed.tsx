@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, StyleSheet, FlatList} from 'react-native';
-import {Text, Avatar, Button, Card, Paragraph, Caption} from 'react-native-paper';
+import {Text, Avatar, Button, Card, Paragraph, Caption, Title} from 'react-native-paper';
 import {
   collection,
   query,
@@ -12,6 +12,7 @@ import {
 import moment from 'moment';
 import {isEmpty} from 'lodash';
 
+import { NewsPaperRegular } from '../../../assets/svg';
 import GlobalContext from '../../../config/context';
 import {db} from '../../../config/firebase';
 import {Header} from '../../../component';
@@ -26,6 +27,15 @@ interface IreactionData {
   reactions_count?: number,
   reaction_code_count: Object,
   reactions: any[]
+}
+
+const REACTION_CODE = {
+  1: 'Like',
+  2: 'Heart',
+  3: 'Haha',
+  4: 'Wow',
+  5: 'Sad',
+  6: 'Angry',
 }
 
 
@@ -226,6 +236,33 @@ const Feed = ({navigation}: IFeed) => {
     updateDoc(feedRef, reactionData).then(() => console.log('success'));
   }
 
+  const renderLikeButton = (item: any, value: string) => {
+    const {data} = item;
+
+    if (data.reactions.length > 0) {
+      const filter = data.reactions.filter((item: any) => item.user_id === authenticatedUser.uid)
+      if (value === 'icon') {
+        if (filter.length > 0) {
+          return REACTION[filter[0].reaction_code]
+        } else {
+          return "thumb-up-outline"
+        }
+      } else {
+        if (filter.length > 0) {
+          return REACTION_CODE[filter[0].reaction_code]
+        } else {
+          return "Like"
+        }
+      }
+    } else {
+      if (value === 'icon') {
+        return "thumb-up-outline"
+      } else {
+        return "Like"
+      }
+    }
+  }
+
   const renderCard = ({item, index}: any) => {
     const {id, data} = item;
     const interval = new Date(data.timestamp.seconds * 1000);
@@ -244,6 +281,10 @@ const Feed = ({navigation}: IFeed) => {
         </Card.Content>
         {!isEmpty(data.photo_url) && renderImage(data)}
         <View style={styles.bottom}>
+          {
+            data.comments_count > 0 &&
+            <Caption style={{alignSelf: 'flex-end'}}>{`${data.comments_count} comments`}</Caption>
+          }
           <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
             {renderReactions(item)}
             {renderReactors(item)}
@@ -293,14 +334,17 @@ const Feed = ({navigation}: IFeed) => {
           </View>
         </View>
         <Card.Actions style={styles.action}>
-          <Button icon="thumb-up-outline"
+          <Button
+            icon={renderLikeButton(item, 'icon')}
             onPress={() => handlePressLike(item, index)}
             onLongPress={() => {
               const items = [...isReactionsVisible]
               items[index] = !isReactionsVisible[index];
               setIsReactionsVisible(items)
             }}
-          >Like</Button>
+          >
+            {renderLikeButton(item, 'label')}
+          </Button>
           <Button
             icon="comment-outline"
             onPress={() => navigation.navigate('Comment', {collectionId: id})}>
@@ -324,7 +368,16 @@ const Feed = ({navigation}: IFeed) => {
           What's on your mind?
         </Button>
       </View>
-      <FlatList data={feed} renderItem={renderCard} />
+      <FlatList contentContainerStyle={feed.length <= 0 && styles.empty} data={feed} renderItem={renderCard} ListEmptyComponent={
+        <View style={{alignItems: 'center'}}>
+          <NewsPaperRegular
+            height={50}
+            width={50}
+            color="#777777" 
+          />
+          <Title>No post available.</Title>
+        </View>
+      } />
     </View>
   );
 };
@@ -391,7 +444,12 @@ const styles = StyleSheet.create({
   reaction: {
     backgroundColor: 'transparent',
     marginHorizontal: 3,
-  }
+  },
+  empty: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default Feed;

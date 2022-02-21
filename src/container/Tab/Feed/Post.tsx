@@ -6,6 +6,7 @@ import moment from 'moment';
 import {setDoc, doc} from 'firebase/firestore';
 import {ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 
+import { ImageRegular } from '../../../assets/svg';
 import GlobalContext from '../../../config/context';
 import {storage, db} from '../../../config/firebase';
 import UploadDialog from './UploadDialog';
@@ -128,9 +129,16 @@ const Post = ({navigation}: IPost) => {
           Add Photo
         </Button>
         <View style={styles.imageContent}>
-          {imageSource && (
-            <Image style={styles.image} source={{uri: imageSource}} />
-          )}
+          {imageSource ?
+            <Image style={styles.image} source={{uri: imageSource}} /> :
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              <ImageRegular
+                height={150}
+                width={150}
+                color="#777777" 
+              />
+            </View>
+          }
         </View>
       </View>
       <Portal>
