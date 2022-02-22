@@ -48,10 +48,11 @@ const Comment = ({navigation, route}: IComment) => {
       ),
       {
         comment: text,
-        name: authenticatedUser.displayName,
-        profile_image_url: authenticatedUser.photoURL,
+        //name: authenticatedUser.first_name,
+        //profile_image_url: authenticatedUser.profile_image_url,
         timestamp: new Date(),
-        user_id: authenticatedUser.uid,
+        uid: authenticatedUser.uid,
+        userRef: doc(db, `/users/${authenticatedUser.uid}`)
       },
     ).then(async () => {
       setText('')
@@ -71,12 +72,24 @@ const Comment = ({navigation, route}: IComment) => {
       collection(db, `feed/${collectionId}/comments`),
       orderBy('timestamp', 'asc'),
     );
-    onSnapshot(qry, querySnapshot => {
+    onSnapshot(qry, async (querySnapshot) => {
       let commentsData: any[] = [];
-      querySnapshot.forEach(docu => {
-        commentsData.push(docu.data());
+      
+      querySnapshot.forEach((doc) => {
+        commentsData.push(doc.data());
       });
-      setComments(commentsData);
+
+      let feedDataHolder: any[] = [];
+      await Promise.all(commentsData.map(async (item) => {
+        let userData =  await getDoc(item.userRef);
+        feedDataHolder.push({
+          ...item,
+          user: userData.data()
+        });
+      }));
+      
+      setComments(feedDataHolder);
+      
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -86,9 +99,9 @@ const Comment = ({navigation, route}: IComment) => {
     return (
       <View>
         <View style={styles.comment}>
-          <Avatar.Image size={30} source={{uri: item.profile_image_url}} />
+          <Avatar.Image size={30} source={{uri: item.user.profile_image_url}} />
           <View style={styles.messageContainer}>
-            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.name}>{`${item.user.first_name} ${item.user.last_name}`}</Text>
             <Paragraph>{item.comment}</Paragraph>
           </View>
         </View>

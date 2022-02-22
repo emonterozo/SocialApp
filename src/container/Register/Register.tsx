@@ -4,7 +4,9 @@ import {TextInput, Button, Text} from 'react-native-paper';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
+import {setDoc, doc} from 'firebase/firestore';
 
+import {db} from '../../config/firebase';
 import GlobalContext from '../../config/context';
 import {CTextInput} from '../../component';
 import {theme} from '../../styles/theme';
@@ -56,8 +58,25 @@ const Register = ({navigation}: IRegister) => {
 
   const register = async (values: any, formikActions: any) => {
     await createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then(async (response: any) => {
-        await updateProfile(response.user, {
+      .then((response: any) => {
+        setDoc(doc(db, 'users', response.user.uid), {
+          first_name: values.firstName,
+          last_name: values.lastName,
+          profile_image_url: 'https://picsum.photos/800',
+        }).then(() => {
+            const userInfo = {
+              first_name: values.firstName,
+              last_name: values.lastName,
+              profile_image_url: 'https://picsum.photos/800',
+              uid: response.user.uid,
+            };
+            setAuthenticatedUser(userInfo);
+            setUserData(userInfo);
+            formikActions.resetForm();
+            formikActions.setSubmitting(false);
+        });
+
+        /*await updateProfile(response.user, {
           displayName: `${values.firstName} ${values.lastName}`,
           photoURL: 'https://picsum.photos/800',
         })
@@ -68,11 +87,11 @@ const Register = ({navigation}: IRegister) => {
             formikActions.resetForm();
             formikActions.setSubmitting(false);
           })
-          .catch(err => console.log('dd', err));
+          .catch(err => console.log('dd', err));*/
       })
       .catch(error => {
         formikActions.setSubmitting(false);
-        console.log('errord', error);
+        console.log('error', error);
       });
   };
 

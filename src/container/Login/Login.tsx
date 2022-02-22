@@ -3,6 +3,7 @@ import {View, StyleSheet} from 'react-native';
 import {TextInput, Button, Text} from 'react-native-paper';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {isEmpty} from 'lodash';
+import { doc, getDoc } from 'firebase/firestore';
 
 import GlobalContext from '../../config/context';
 import {auth, db} from '../../config/firebase';
@@ -27,9 +28,18 @@ const Login = ({navigation}: ILogin) => {
 
   const login = () => {
     signInWithEmailAndPassword(auth, user.email, user.password)
-      .then(response => {
-        setAuthenticatedUser(response.user);
-        setUserData(response.user);
+      .then(async (response) => {
+        const userRef = doc(db, 'users', response.user.uid);
+        const userSnap = await getDoc(userRef);
+        const data = userSnap.data()
+        const userInfo = {
+          first_name: data?.first_name,
+          last_name: data?.last_name,
+          profile_image_url: data?.profile_image_url,
+          uid: response.user.uid,
+        }
+        setAuthenticatedUser(userInfo);
+        setUserData(userInfo);
       })
       .catch(error => {
         setError('Invalid Credentials');

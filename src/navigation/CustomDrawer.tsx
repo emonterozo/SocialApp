@@ -34,7 +34,7 @@ const CustomDrawer = (props: any) => {
         style={styles.banner}>
         <View style={styles.subheader}>
           <Text style={styles.subheadertText}>
-            {authenticatedUser.displayName}
+            {`${authenticatedUser.first_name} ${authenticatedUser.last_name}`}
           </Text>
         </View>
       </ImageBackground>

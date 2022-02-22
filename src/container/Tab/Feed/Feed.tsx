@@ -8,6 +8,7 @@ import {
   onSnapshot,
   updateDoc,
   doc,
+  getDoc,
 } from 'firebase/firestore';
 import moment from 'moment';
 import {isEmpty} from 'lodash';
@@ -52,20 +53,36 @@ const Feed = ({navigation}: IFeed) => {
     }
   }, [feed])
   
+  const get = (item: number) => {
+    console.log(item)
+  }
 
   useEffect(() => {
     const qry = query(collection(db, 'feed'), orderBy('timestamp', 'desc'));
-    onSnapshot(qry, querySnapshot => {
+    onSnapshot(qry, async (querySnapshot) => {
       let feedData: any[] = [];
-      querySnapshot.forEach(doc => {
+      
+      querySnapshot.forEach((doc) => {
         feedData.push({
           id: doc.id,
           data: doc.data(),
         });
       });
-      setFeed(feedData);
+
+      let feedDataHolder: any[] = [];
+      await Promise.all(feedData.map(async (item) => {
+        let userData =  await getDoc(item.data.userRef);
+        feedDataHolder.push({
+          ...item,
+          user: userData.data()
+        });
+      }));
+      
+      setFeed(feedDataHolder);
     });
+
   }, []);
+  
 
   const renderReactions = (item: any) => {
     const {data} = item;
@@ -103,7 +120,7 @@ const Feed = ({navigation}: IFeed) => {
   };
 
   const renderReactors = (item: any) => {
-    const {data} = item;
+    const {data, user} = item;
   
     if (data.reactions_count > 0) {
       if (data.reactions_count > 2) {
@@ -133,7 +150,7 @@ const Feed = ({navigation}: IFeed) => {
     items[index] = false;
     setIsReactionsVisible(items)
 
-    const filter = data.reactions.filter((item: any) => item.user_id === authenticatedUser.uid)
+    const filter = data.reactions.filter((item: any) => item.uid === authenticatedUser.uid)
 
     let reactionData: IreactionData = {
       reactions_count: 0,
@@ -150,7 +167,7 @@ const Feed = ({navigation}: IFeed) => {
             ...data.reaction_code_count,
             [code]: data.reaction_code_count[code] - 1
           },
-          reactions: data.reactions.filter((item: any) => item.user_id !== authenticatedUser.uid)
+          reactions: data.reactions.filter((item: any) => item.uid !== authenticatedUser.uid)
         }
       } else {
         // will update reaction_code_count
@@ -158,7 +175,7 @@ const Feed = ({navigation}: IFeed) => {
         data.reaction_code_count[code] = data.reaction_code_count[code] + 1;
 
         // will update reaction_code
-        const objIndex = data.reactions.findIndex(((obj: any) => obj.user_id == authenticatedUser.uid));
+        const objIndex = data.reactions.findIndex(((obj: any) => obj.uid == authenticatedUser.uid));
         data.reactions[objIndex].reaction_code = code
         
         reactionData = {
@@ -176,10 +193,11 @@ const Feed = ({navigation}: IFeed) => {
         reactions: [
           ...data.reactions,
           {
-            name: authenticatedUser.displayName,
-            profile_image_url: authenticatedUser.photoURL,
+            name: authenticatedUser.first_name,
+            profile_image_url: authenticatedUser.profile_image_url,
             reaction_code: code,
-            user_id: authenticatedUser.uid,
+            uid: authenticatedUser.uid,
+            userRef: doc(db, `/users/${authenticatedUser.uid}`)
           }
         ]
       }
@@ -190,13 +208,13 @@ const Feed = ({navigation}: IFeed) => {
   };
 
   const handlePressLike = (item: any, index: number) => {
-    const {id, data} = item
+    const {id, data, user} = item
 
     const items = [...isReactionsVisible]
     items[index] = false;
     setIsReactionsVisible(items)
 
-    const filter = data.reactions.filter((item: any) => item.user_id === authenticatedUser.uid)
+    const filter = data.reactions.filter((item: any) => item.uid === authenticatedUser.uid)
 
     let reactionData: IreactionData = {
       reactions_count: 0,
@@ -211,7 +229,7 @@ const Feed = ({navigation}: IFeed) => {
           ...data.reaction_code_count,
           [filter[0].reaction_code]: data.reaction_code_count[filter[0].reaction_code] - 1
         },
-        reactions: data.reactions.filter((item: any) => item.user_id !== authenticatedUser.uid)
+        reactions: data.reactions.filter((item: any) => item.uid !== authenticatedUser.uid)
       }
     } else {
       reactionData = {
@@ -223,10 +241,11 @@ const Feed = ({navigation}: IFeed) => {
         reactions: [
           ...data.reactions,
           {
-            name: authenticatedUser.displayName,
-            profile_image_url: authenticatedUser.photoURL,
+            name: authenticatedUser.first_name,
+            profile_image_url: authenticatedUser.profile_image_url,
             reaction_code: 1,
-            user_id: authenticatedUser.uid,
+            uid: authenticatedUser.uid,
+            userRef: doc(db, `/users/${authenticatedUser.uid}`)
           }
         ]
       }
@@ -240,7 +259,7 @@ const Feed = ({navigation}: IFeed) => {
     const {data} = item;
 
     if (data.reactions.length > 0) {
-      const filter = data.reactions.filter((item: any) => item.user_id === authenticatedUser.uid)
+      const filter = data.reactions.filter((item: any) => item.uid === authenticatedUser.uid)
       if (value === 'icon') {
         if (filter.length > 0) {
           return REACTION[filter[0].reaction_code]
@@ -264,16 +283,16 @@ const Feed = ({navigation}: IFeed) => {
   }
 
   const renderCard = ({item, index}: any) => {
-    const {id, data} = item;
+    const {id, data, user} = item;
     const interval = new Date(data.timestamp.seconds * 1000);
 
     return (
       <Card style={styles.card} mode="outlined">
         <Card.Content>
           <View style={styles.cardHeader}>
-            <Avatar.Image source={{uri: data.profile_image_url}} size={40} />
+            <Avatar.Image source={{uri: user.profile_image_url}} size={40} />
             <View style={styles.info}>
-              <Text>{data.name}</Text>
+              <Text>{`${user.first_name} ${user.last_name}`}</Text>
               <Text>{moment(interval).fromNow()}</Text>
             </View>
           </View>
@@ -359,7 +378,7 @@ const Feed = ({navigation}: IFeed) => {
     <View style={styles.container}>
       <Header title="Feed" onMenuPress={() => navigation.openDrawer()} />
       <View style={styles.header}>
-        <Avatar.Image source={{uri: authenticatedUser.photoURL}} size={40} />
+        <Avatar.Image source={{uri: authenticatedUser.profile_image_url}} size={40} />
         <Button
           mode="outlined"
           uppercase={false}

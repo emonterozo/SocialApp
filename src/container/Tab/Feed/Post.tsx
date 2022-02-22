@@ -62,11 +62,9 @@ const Post = ({navigation}: IPost) => {
         getDownloadURL(storageRef).then(URL => {
           setDoc(doc(db, 'feed', `post-${authenticatedUser.uid}-${date}`), {
             description: description,
-            name: authenticatedUser.displayName,
             photo_url: URL,
-            profile_image_url: authenticatedUser.photoURL,
             timestamp: new Date(),
-            user_id: authenticatedUser.uid,
+            uid: authenticatedUser.uid,
             comments_count: 0,
             reactions_count: 0,
             reaction_code_count: {
@@ -77,18 +75,17 @@ const Post = ({navigation}: IPost) => {
               5: 0,
               6: 0 ,
             },
-            reactions: []
+            reactions: [],
+            userRef: doc(db, `/users/${authenticatedUser.uid}`)
           }).then(() => navigation.navigate('Feed'));
         });
       });
     } else {
       setDoc(doc(db, 'feed', `post-${authenticatedUser.uid}-${date}`), {
         description: description,
-        name: authenticatedUser.displayName,
         photo_url: '',
-        profile_image_url: authenticatedUser.photoURL,
         timestamp: new Date(),
-        user_id: authenticatedUser.uid,
+        uid: authenticatedUser.uid,
         comments_count: 0,
         reactions_count: 0,
         reaction_code_count: {
@@ -99,7 +96,8 @@ const Post = ({navigation}: IPost) => {
           5: 0,
           6: 0 ,
         },
-        reactions: []
+        reactions: [],
+        userRef: doc(db, `/users/${authenticatedUser.uid}`)
       }).then(() => navigation.navigate('Feed'));
     }
   };
