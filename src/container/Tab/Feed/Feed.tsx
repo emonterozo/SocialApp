@@ -31,12 +31,22 @@ interface IreactionData {
 }
 
 const REACTION_CODE = {
-  1: 'Like',
-  2: 'Heart',
-  3: 'Haha',
-  4: 'Wow',
-  5: 'Sad',
-  6: 'Angry',
+  label: {
+    1: 'Like',
+    2: 'Heart',
+    3: 'Haha',
+    4: 'Wow',
+    5: 'Sad',
+    6: 'Angry',
+  },
+  icon: {
+    1: 'thumb-up-outline',
+    2: 'heart-outline',
+    3: 'emoticon-lol-outline',
+    4: 'emoticon-frown-outline',
+    5: 'emoticon-cry-outline',
+    6: 'emoticon-angry-outline',
+  }
 }
 
 
@@ -279,13 +289,13 @@ const Feed = ({navigation}: IFeed) => {
       const filter = data.reactions.filter((item: any) => item.uid === authenticatedUser.uid)
       if (value === 'icon') {
         if (filter.length > 0) {
-          return REACTION[filter[0].reaction_code]
+          return REACTION_CODE.icon[filter[0].reaction_code]
         } else {
           return "thumb-up-outline"
         }
       } else {
         if (filter.length > 0) {
-          return REACTION_CODE[filter[0].reaction_code]
+          return REACTION_CODE.label[filter[0].reaction_code]
         } else {
           return "Like"
         }
