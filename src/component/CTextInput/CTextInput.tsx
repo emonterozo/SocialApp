@@ -1,10 +1,10 @@
 import React from 'react';
-import {View, StyleSheet} from 'react-native';
-import {TextInput, Text} from 'react-native-paper';
+import { View, StyleSheet } from 'react-native';
+import { TextInput, Text } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {isEmpty} from 'lodash';
+import { isEmpty } from 'lodash';
 
-import {theme} from '../../styles/theme';
+import { theme } from '../../styles/theme';
 
 interface ICTextInput {
   value: string;
@@ -20,7 +20,7 @@ interface ICTextInput {
   right?: any;
 }
 
-const CTextInput = ({
+function CTextInput({
   value,
   onChangeText,
   placeholder,
@@ -32,14 +32,15 @@ const CTextInput = ({
   onFocus,
   onBlur,
   right,
-}: ICTextInput) => {
+}: ICTextInput) {
   return (
     <View style={styles.container}>
       <Text
         style={[
           isFocused ? styles.focused : styles.notFocused,
-          !isEmpty(error) && {color: theme.colors.error},
-        ]}>
+          !isEmpty(error) && { color: theme.colors.error },
+        ]}
+      >
         {label}
         {isRequired && <Text style={styles.required}>*</Text>}
       </Text>
@@ -52,21 +53,17 @@ const CTextInput = ({
         right={right}
         onFocus={onFocus}
         onBlur={onBlur}
-        error={isEmpty(error) ? false : true}
+        error={!isEmpty(error)}
       />
       {!isEmpty(error) && (
         <View style={styles.errorContainer}>
-          <MaterialCommunityIcons
-            name="alert-circle-outline"
-            color="red"
-            size={18}
-          />
+          <MaterialCommunityIcons name="alert-circle-outline" color="red" size={18} />
           <Text style={styles.error}>{error}</Text>
         </View>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

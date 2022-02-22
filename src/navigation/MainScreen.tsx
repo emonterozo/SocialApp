@@ -1,11 +1,11 @@
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
+import BottomNavigation from './BottomNavigation';
+import { Post, Comment } from '../container/Tab';
 
 const HomeStack = createStackNavigator();
-import BottomNavigation from './BottomNavigation';
-import {Post, Comment} from '../container/Tab';
 
-const MainScreen = () => {
+function MainScreen() {
   return (
     <HomeStack.Navigator>
       <HomeStack.Screen
@@ -31,6 +31,6 @@ const MainScreen = () => {
       />
     </HomeStack.Navigator>
   );
-};
+}
 
 export default MainScreen;

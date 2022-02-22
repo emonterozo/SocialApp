@@ -1,44 +1,34 @@
-import React, {useState, useContext} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {TextInput, Button, Text} from 'react-native-paper';
-import {Formik} from 'formik';
+import React, { useState, useContext } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { TextInput, Button, Text } from 'react-native-paper';
+import { Formik } from 'formik';
 import * as Yup from 'yup';
-import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
-import {setDoc, doc} from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
 
-import {db} from '../../config/firebase';
+import { ScrollView } from 'react-native-gesture-handler';
+import { db, auth } from '../../config/firebase';
 import GlobalContext from '../../config/context';
-import {CTextInput} from '../../component';
-import {theme} from '../../styles/theme';
-import {ScrollView} from 'react-native-gesture-handler';
-import {auth} from '../../config/firebase';
-import {setUserData} from '../../utils/utils';
+import { CTextInput } from '../../component';
+import { theme } from '../../styles/theme';
+import { setUserData } from '../../utils/utils';
 
 interface IRegister {
   navigation: any;
 }
 
 const validationSchema = Yup.object({
-  firstName: Yup.string()
-    .trim()
-    .min(2, 'Invalid First Name!')
-    .required('First Name is required!'),
-  lastName: Yup.string()
-    .trim()
-    .min(2, 'Invalid Last Name!')
-    .required('Last Name is required!'),
+  firstName: Yup.string().trim().min(2, 'Invalid First Name!').required('First Name is required!'),
+  lastName: Yup.string().trim().min(2, 'Invalid Last Name!').required('Last Name is required!'),
   email: Yup.string().email('Invalid email!').required('Email is required!'),
-  password: Yup.string()
-    .trim()
-    .min(8, 'Password is too short!')
-    .required('Password is required!'),
+  password: Yup.string().trim().min(8, 'Password is too short!').required('Password is required!'),
   confirmPassword: Yup.string()
     .equals([Yup.ref('password'), null], 'Password does not match!')
     .required('Confirm Password is required!'),
 });
 
-const Register = ({navigation}: IRegister) => {
-  const {setAuthenticatedUser} = useContext(GlobalContext);
+function Register({ navigation }: IRegister) {
+  const { setAuthenticatedUser } = useContext(GlobalContext);
   const userData = {
     firstName: '',
     lastName: '',
@@ -50,11 +40,9 @@ const Register = ({navigation}: IRegister) => {
   const [isLastNameFocused, setIsLastNameFocused] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-  const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] =
-    useState(false);
+  const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
   const [isPasswordSecured, setIsPasswordSecured] = useState(true);
-  const [isConfirmPasswordSecured, setIsConfirmPasswordSecured] =
-    useState(true);
+  const [isConfirmPasswordSecured, setIsConfirmPasswordSecured] = useState(true);
 
   const register = async (values: any, formikActions: any) => {
     await createUserWithEmailAndPassword(auth, values.email, values.password)
@@ -64,19 +52,19 @@ const Register = ({navigation}: IRegister) => {
           last_name: values.lastName,
           profile_image_url: 'https://picsum.photos/800',
         }).then(() => {
-            const userInfo = {
-              first_name: values.firstName,
-              last_name: values.lastName,
-              profile_image_url: 'https://picsum.photos/800',
-              uid: response.user.uid,
-            };
-            setAuthenticatedUser(userInfo);
-            setUserData(userInfo);
-            formikActions.resetForm();
-            formikActions.setSubmitting(false);
+          const userInfo = {
+            first_name: values.firstName,
+            last_name: values.lastName,
+            profile_image_url: 'https://picsum.photos/800',
+            uid: response.user.uid,
+          };
+          setAuthenticatedUser(userInfo);
+          setUserData(userInfo);
+          formikActions.resetForm();
+          formikActions.setSubmitting(false);
         });
 
-        /*await updateProfile(response.user, {
+        /* await updateProfile(response.user, {
           displayName: `${values.firstName} ${values.lastName}`,
           photoURL: 'https://picsum.photos/800',
         })
@@ -87,9 +75,9 @@ const Register = ({navigation}: IRegister) => {
             formikActions.resetForm();
             formikActions.setSubmitting(false);
           })
-          .catch(err => console.log('dd', err));*/
+          .catch(err => console.log('dd', err)); */
       })
-      .catch(error => {
+      .catch((error) => {
         formikActions.setSubmitting(false);
         console.log('error', error);
       });
@@ -98,13 +86,9 @@ const Register = ({navigation}: IRegister) => {
   return (
     <View style={styles.container}>
       <View style={styles.top}>
-        <Formik
-          initialValues={userData}
-          validationSchema={validationSchema}
-          onSubmit={register}>
-          {({values, errors, isSubmitting, handleChange, handleSubmit}) => {
-            const {firstName, lastName, email, password, confirmPassword} =
-              values;
+        <Formik initialValues={userData} validationSchema={validationSchema} onSubmit={register}>
+          {({ values, errors, isSubmitting, handleChange, handleSubmit }) => {
+            const { firstName, lastName, email, password, confirmPassword } = values;
             return (
               <View style={styles.scrollView}>
                 <ScrollView>
@@ -170,9 +154,7 @@ const Register = ({navigation}: IRegister) => {
                       <TextInput.Icon
                         name={isConfirmPasswordSecured ? 'eye-off' : 'eye'}
                         color={theme.colors.gray}
-                        onPress={() =>
-                          setIsConfirmPasswordSecured(!isConfirmPasswordSecured)
-                        }
+                        onPress={() => setIsConfirmPasswordSecured(!isConfirmPasswordSecured)}
                       />
                     }
                   />
@@ -181,7 +163,8 @@ const Register = ({navigation}: IRegister) => {
                     mode="contained"
                     style={styles.button}
                     onPress={handleSubmit}
-                    loading={isSubmitting}>
+                    loading={isSubmitting}
+                  >
                     Register
                   </Button>
                   <View style={styles.bottom}>
@@ -189,7 +172,8 @@ const Register = ({navigation}: IRegister) => {
                     <Button
                       mode="text"
                       uppercase={false}
-                      onPress={() => navigation.navigate('Login')}>
+                      onPress={() => navigation.navigate('Login')}
+                    >
                       Login
                     </Button>
                   </View>
@@ -201,7 +185,7 @@ const Register = ({navigation}: IRegister) => {
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
