@@ -71,9 +71,26 @@ const Feed = ({navigation}: IFeed) => {
 
       let feedDataHolder: any[] = [];
       await Promise.all(feedData.map(async (item) => {
+        let reactedBy: any = [];
+
+         // will get reaction user
+        if (item.data.reactions.length > 0) {
+          await Promise.all(item.data.reactions.map(async (item) => {
+            let userData =  await getDoc(item.userRef);
+            //console.log('d', d)
+            reactedBy.push({
+              ...userData.data(),
+              ...item
+            })
+          }))
+        }
+
+
+        // will get feed user
         let userData =  await getDoc(item.data.userRef);
         feedDataHolder.push({
           ...item,
+          reactedBy: reactedBy,
           user: userData.data()
         });
       }));
@@ -120,20 +137,20 @@ const Feed = ({navigation}: IFeed) => {
   };
 
   const renderReactors = (item: any) => {
-    const {data, user} = item;
+    const {data, reactedBy} = item;
   
     if (data.reactions_count > 0) {
       if (data.reactions_count > 2) {
         return (
-          <Caption style={styles.reactors}>{`${data.reactions[0].name}, ${data.reactions[1].name} and ${data.reactions_count - 2} more reacted to this post`}</Caption>
+          <Caption style={styles.reactors}>{`${reactedBy[0].first_name}, ${reactedBy[1].first_name} and ${data.reactions_count - 2} more reacted to this post`}</Caption>
         )
       } else if (data.reactions_count < 2) {
         return (
-          <Caption style={styles.reactors}>{`${data.reactions[0].name} reacted to this post`}</Caption>
+          <Caption style={styles.reactors}>{`${reactedBy[0].first_name} ${reactedBy[0].last_name} reacted to this post`}</Caption>
         )
       } else {
         return (
-          <Caption style={styles.reactors}>{`${data.reactions[0].name}, ${data.reactions[1].name} reacted to this post`}</Caption>
+          <Caption style={styles.reactors}>{`${reactedBy[0].first_name} ${reactedBy[0].last_name}, ${reactedBy[1].first_name} ${reactedBy[1].last_name} reacted to this post`}</Caption>
         )
       }
     }
@@ -193,8 +210,8 @@ const Feed = ({navigation}: IFeed) => {
         reactions: [
           ...data.reactions,
           {
-            name: authenticatedUser.first_name,
-            profile_image_url: authenticatedUser.profile_image_url,
+            //name: authenticatedUser.first_name,
+            //profile_image_url: authenticatedUser.profile_image_url,
             reaction_code: code,
             uid: authenticatedUser.uid,
             userRef: doc(db, `/users/${authenticatedUser.uid}`)
@@ -241,8 +258,8 @@ const Feed = ({navigation}: IFeed) => {
         reactions: [
           ...data.reactions,
           {
-            name: authenticatedUser.first_name,
-            profile_image_url: authenticatedUser.profile_image_url,
+            //name: authenticatedUser.first_name,
+            //profile_image_url: authenticatedUser.profile_image_url,
             reaction_code: 1,
             uid: authenticatedUser.uid,
             userRef: doc(db, `/users/${authenticatedUser.uid}`)
