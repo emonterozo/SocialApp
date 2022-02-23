@@ -50,12 +50,12 @@ const DrawerNavigator = () => {
       <Drawer.Screen
         name="Home"
         component={MainScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, unmountOnBlur: true }}
       />
       <Drawer.Screen
         name="Account"
         component={Account}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, unmountOnBlur: true }}
       />
     </Drawer.Navigator>
   );

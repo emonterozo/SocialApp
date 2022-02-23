@@ -2,7 +2,7 @@ import React from "react";
 import { TouchableWithoutFeedback, View, StyleSheet } from "react-native";
 import { TouchableRipple, Text } from "react-native-paper";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { theme } from "../../../styles/theme";
+import { theme } from "../../styles/theme";
 
 interface IUploadDialog {
   handleOpenCamera: () => void;

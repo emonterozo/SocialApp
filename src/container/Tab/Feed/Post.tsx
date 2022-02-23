@@ -9,7 +9,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { ImageRegular } from "../../../assets/svg";
 import GlobalContext from "../../../config/context";
 import { storage, db } from "../../../config/firebase";
-import UploadDialog from "./UploadDialog";
+import { UploadDialog } from "../../../component";
 
 interface IPost {
   navigation: any;

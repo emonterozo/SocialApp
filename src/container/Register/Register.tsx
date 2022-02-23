@@ -63,11 +63,13 @@ const Register = ({ navigation }: IRegister) => {
         setDoc(doc(db, "users", response.user.uid), {
           first_name: values.firstName,
           last_name: values.lastName,
+          email: values.email,
           profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
         }).then(() => {
           const userInfo = {
             first_name: values.firstName,
             last_name: values.lastName,
+            email: values.email,
             profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
             uid: response.user.uid,
           };

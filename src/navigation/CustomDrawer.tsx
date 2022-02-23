@@ -2,7 +2,9 @@ import React, { useContext } from "react";
 import { SafeAreaView, StyleSheet, ImageBackground, View } from "react-native";
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 import { Button, Divider, Text } from "react-native-paper";
+import { signOut } from "firebase/auth";
 
+import { auth } from "../config/firebase";
 import GlobalContext from "../config/context";
 import { removeUserData } from "../utils/utils";
 
@@ -24,8 +26,14 @@ const CustomDrawer = (props: any) => {
   };
 
   const logout = () => {
-    removeUserData();
-    setAuthenticatedUser({});
+    signOut(auth)
+      .then(() => {
+        removeUserData();
+        setAuthenticatedUser({});
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
   return (
     <SafeAreaView style={styles.container}>

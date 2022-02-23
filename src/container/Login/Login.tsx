@@ -36,6 +36,7 @@ const Login = ({ navigation }: ILogin) => {
           first_name: data?.first_name,
           last_name: data?.last_name,
           profile_image_url: data?.profile_image_url,
+          email: data?.email,
           uid: response.user.uid,
         };
         setAuthenticatedUser(userInfo);
