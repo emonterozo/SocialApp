@@ -1,8 +1,8 @@
-import React from 'react';
-import {TouchableWithoutFeedback, View, StyleSheet} from 'react-native';
-import {TouchableRipple, Text, Title} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {theme} from '../../../styles/theme';
+import React from "react";
+import { TouchableWithoutFeedback, View, StyleSheet } from "react-native";
+import { TouchableRipple, Text } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { theme } from "../../../styles/theme";
 
 interface IUploadDialog {
   handleOpenCamera: () => void;
@@ -19,10 +19,7 @@ const UploadDialog = ({
     <TouchableWithoutFeedback onPress={handleHideDialog}>
       <View style={styles.dialogContainer}>
         <View style={styles.dialogContent}>
-          <TouchableRipple
-            onPress={handleOpenCamera}
-            hasTVPreferredFocus={false}
-            tvParallaxProperties>
+          <TouchableRipple onPress={handleOpenCamera}>
             <View style={styles.option}>
               <MaterialCommunityIcons
                 size={30}
@@ -32,10 +29,7 @@ const UploadDialog = ({
               <Text style={styles.optionText}>Use Camera</Text>
             </View>
           </TouchableRipple>
-          <TouchableRipple
-            onPress={handleOpenGallery}
-            hasTVPreferredFocus={false}
-            tvParallaxProperties>
+          <TouchableRipple onPress={handleOpenGallery}>
             <View style={styles.option}>
               <MaterialCommunityIcons
                 size={30}
@@ -56,17 +50,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dialogContent: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
     left: 0,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     paddingHorizontal: 30,
     paddingVertical: 10,
   },
   option: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
   },
   optionText: {

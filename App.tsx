@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
-import {Provider} from 'react-native-paper';
+import React, { useState } from "react";
+import { Provider } from "react-native-paper";
 
-import {theme} from './src/styles/theme';
-import GlobalContext from './src/config/context';
+import { theme } from "./src/styles/theme";
+import GlobalContext from "./src/config/context";
 
-import {LogBox} from 'react-native';
-LogBox.ignoreLogs(['Warning: ...']);
+import { LogBox } from "react-native";
+LogBox.ignoreLogs(["Warning: ..."]);
 LogBox.ignoreAllLogs();
 
-import Navigation from './src/navigation/Navigation';
+import Navigation from "./src/navigation/Navigation";
 const App = () => {
   const [authenticatedUser, setAuthenticatedUser] = useState({});
 

@@ -1,10 +1,10 @@
-import React from 'react';
-import {View, StyleSheet} from 'react-native';
-import {TextInput, Text} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {isEmpty} from 'lodash';
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { TextInput, Text } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { isEmpty } from "lodash";
 
-import {theme} from '../../styles/theme';
+import { theme } from "../../styles/theme";
 
 interface ICTextInput {
   value: string;
@@ -38,8 +38,9 @@ const CTextInput = ({
       <Text
         style={[
           isFocused ? styles.focused : styles.notFocused,
-          !isEmpty(error) && {color: theme.colors.error},
-        ]}>
+          !isEmpty(error) && { color: theme.colors.error },
+        ]}
+      >
         {label}
         {isRequired && <Text style={styles.required}>*</Text>}
       </Text>
@@ -74,14 +75,14 @@ const styles = StyleSheet.create({
   },
   focused: {
     color: theme.colors.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   notFocused: {
     color: theme.colors.primary,
   },
   errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 5,
   },
   error: {

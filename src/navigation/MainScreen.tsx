@@ -1,9 +1,9 @@
-import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const HomeStack = createStackNavigator();
-import BottomNavigation from './BottomNavigation';
-import {Post, Comment} from '../container/Tab';
+import BottomNavigation from "./BottomNavigation";
+import { Post, Comment } from "../container/Tab";
 
 const MainScreen = () => {
   return (

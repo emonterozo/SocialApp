@@ -1,32 +1,33 @@
-import React, {useState, useContext} from 'react';
-import {View, StyleSheet, Image} from 'react-native';
-import {TextInput, Appbar, Button, Portal} from 'react-native-paper';
-import ImagePicker from 'react-native-image-crop-picker';
-import moment from 'moment';
-import {setDoc, doc} from 'firebase/firestore';
-import {ref, uploadBytes, getDownloadURL} from 'firebase/storage';
+import React, { useState, useContext } from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { TextInput, Appbar, Button, Portal } from "react-native-paper";
+import ImagePicker from "react-native-image-crop-picker";
+import moment from "moment";
+import { setDoc, doc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-import { ImageRegular } from '../../../assets/svg';
-import GlobalContext from '../../../config/context';
-import {storage, db} from '../../../config/firebase';
-import UploadDialog from './UploadDialog';
+import { ImageRegular } from "../../../assets/svg";
+import GlobalContext from "../../../config/context";
+import { storage, db } from "../../../config/firebase";
+import UploadDialog from "./UploadDialog";
 
 interface IPost {
   navigation: any;
 }
 
-const Post = ({navigation}: IPost) => {
-  const {authenticatedUser} = useContext(GlobalContext);
+const Post = ({ navigation }: IPost) => {
+  const { authenticatedUser } = useContext(GlobalContext);
   const [imageSource, setImageSource] = useState<string | null>(null);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [isUploadDialogVisible, setIsUploadDialogVisible] = useState(false);
 
+  // will open camera
   const handleOpenCamera = () => {
     ImagePicker.openCamera({
       cropping: true,
-      mediaType: 'photo',
+      mediaType: "photo",
     })
-      .then(image => {
+      .then((image) => {
         setIsUploadDialogVisible(false);
         setImageSource(image.path);
       })
@@ -39,7 +40,7 @@ const Post = ({navigation}: IPost) => {
   const handleOpenGallery = () => {
     ImagePicker.openPicker({
       cropping: true,
-      mediaType: 'photo',
+      mediaType: "photo",
     })
       .then((image: any) => {
         setIsUploadDialogVisible(false);
@@ -51,16 +52,20 @@ const Post = ({navigation}: IPost) => {
   };
 
   const post = async () => {
-    const date = moment(new Date()).format('YYYY-MM-DD-HH:mm:ss');
+    const date = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
+    // has imageSource
     if (imageSource) {
       // convert to bytes
       const img = await fetch(imageSource);
       const bytes = await img.blob();
 
+      // will store image
       const storageRef = ref(storage, `post-${authenticatedUser.uid}-${date}`);
       uploadBytes(storageRef, bytes).then(() => {
-        getDownloadURL(storageRef).then(URL => {
-          setDoc(doc(db, 'feed', `post-${authenticatedUser.uid}-${date}`), {
+        // will get URL of the stored image
+        getDownloadURL(storageRef).then((URL) => {
+          // will add add new feed
+          setDoc(doc(db, "feed", `post-${authenticatedUser.uid}-${date}`), {
             description: description,
             photo_url: URL,
             timestamp: new Date(),
@@ -73,17 +78,17 @@ const Post = ({navigation}: IPost) => {
               3: 0,
               4: 0,
               5: 0,
-              6: 0 ,
+              6: 0,
             },
             reactions: [],
-            userRef: doc(db, `/users/${authenticatedUser.uid}`)
-          }).then(() => navigation.navigate('Feed'));
+            userRef: doc(db, `/users/${authenticatedUser.uid}`),
+          }).then(() => navigation.navigate("Feed"));
         });
       });
     } else {
-      setDoc(doc(db, 'feed', `post-${authenticatedUser.uid}-${date}`), {
+      setDoc(doc(db, "feed", `post-${authenticatedUser.uid}-${date}`), {
         description: description,
-        photo_url: '',
+        photo_url: "",
         timestamp: new Date(),
         uid: authenticatedUser.uid,
         comments_count: 0,
@@ -94,11 +99,11 @@ const Post = ({navigation}: IPost) => {
           3: 0,
           4: 0,
           5: 0,
-          6: 0 ,
+          6: 0,
         },
         reactions: [],
-        userRef: doc(db, `/users/${authenticatedUser.uid}`)
-      }).then(() => navigation.navigate('Feed'));
+        userRef: doc(db, `/users/${authenticatedUser.uid}`),
+      }).then(() => navigation.navigate("Feed"));
     }
   };
 
@@ -123,20 +128,24 @@ const Post = ({navigation}: IPost) => {
         <Button
           style={styles.button}
           mode="contained"
-          onPress={() => setIsUploadDialogVisible(true)}>
+          onPress={() => setIsUploadDialogVisible(true)}
+        >
           Add Photo
         </Button>
         <View style={styles.imageContent}>
-          {imageSource ?
-            <Image style={styles.image} source={{uri: imageSource}} /> :
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-              <ImageRegular
-                height={150}
-                width={150}
-                color="#777777" 
-              />
+          {imageSource ? (
+            <Image style={styles.image} source={{ uri: imageSource }} />
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <ImageRegular height={150} width={150} color="#777777" />
             </View>
-          }
+          )}
         </View>
       </View>
       <Portal>
@@ -171,9 +180,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   image: {
-    height: '100%',
-    width: '100%',
-    resizeMode: 'contain',
+    height: "100%",
+    width: "100%",
+    resizeMode: "contain",
   },
 });
 

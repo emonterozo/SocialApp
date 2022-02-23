@@ -1,49 +1,49 @@
-import React, {useState, useContext} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {TextInput, Button, Text} from 'react-native-paper';
-import {signInWithEmailAndPassword} from 'firebase/auth';
-import {isEmpty} from 'lodash';
-import { doc, getDoc } from 'firebase/firestore';
+import React, { useState, useContext } from "react";
+import { View, StyleSheet } from "react-native";
+import { TextInput, Button, Text } from "react-native-paper";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { isEmpty } from "lodash";
+import { doc, getDoc } from "firebase/firestore";
 
-import GlobalContext from '../../config/context';
-import {auth, db} from '../../config/firebase';
-import {CTextInput, Message} from '../../component';
-import {theme} from '../../styles/theme';
-import {setUserData} from '../../utils/utils';
+import GlobalContext from "../../config/context";
+import { auth, db } from "../../config/firebase";
+import { CTextInput, Message } from "../../component";
+import { theme } from "../../styles/theme";
+import { setUserData } from "../../utils/utils";
 
 interface ILogin {
   navigation: any;
 }
 
-const Login = ({navigation}: ILogin) => {
-  const {setAuthenticatedUser} = useContext(GlobalContext);
+const Login = ({ navigation }: ILogin) => {
+  const { setAuthenticatedUser } = useContext(GlobalContext);
   const [user, setUser] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [isSecured, setIsSecured] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const login = () => {
     signInWithEmailAndPassword(auth, user.email, user.password)
       .then(async (response) => {
-        const userRef = doc(db, 'users', response.user.uid);
+        const userRef = doc(db, "users", response.user.uid);
         const userSnap = await getDoc(userRef);
-        const data = userSnap.data()
+        const data = userSnap.data();
         const userInfo = {
           first_name: data?.first_name,
           last_name: data?.last_name,
           profile_image_url: data?.profile_image_url,
           uid: response.user.uid,
-        }
+        };
         setAuthenticatedUser(userInfo);
         setUserData(userInfo);
       })
-      .catch(error => {
-        setError('Invalid Credentials');
-        console.log('error', error);
+      .catch((error) => {
+        setError("Invalid Credentials");
+        console.log("error", error);
       });
   };
 
@@ -64,7 +64,7 @@ const Login = ({navigation}: ILogin) => {
           label="Email"
           placeholder="Email"
           value={user.email}
-          onChangeText={text =>
+          onChangeText={(text) =>
             setUser({
               ...user,
               email: text,
@@ -78,7 +78,7 @@ const Login = ({navigation}: ILogin) => {
           label="Password"
           placeholder="Password"
           value={user.password}
-          onChangeText={text =>
+          onChangeText={(text) =>
             setUser({
               ...user,
               password: text,
@@ -90,7 +90,7 @@ const Login = ({navigation}: ILogin) => {
           isSecureText={isSecured}
           right={
             <TextInput.Icon
-              name={isSecured ? 'eye-off' : 'eye'}
+              name={isSecured ? "eye-off" : "eye"}
               color={theme.colors.gray}
               onPress={() => setIsSecured(!isSecured)}
             />
@@ -103,7 +103,8 @@ const Login = ({navigation}: ILogin) => {
             isEmpty(user.email) || isEmpty(user.password) ? true : false
           }
           style={styles.button}
-          onPress={login}>
+          onPress={login}
+        >
           Login
         </Button>
         <View style={styles.bottom}>
@@ -111,7 +112,8 @@ const Login = ({navigation}: ILogin) => {
           <Button
             mode="text"
             uppercase={false}
-            onPress={() => navigation.replace('Register')}>
+            onPress={() => navigation.replace("Register")}
+          >
             Register
           </Button>
         </View>
@@ -124,18 +126,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 30,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   top: {
     flex: 2,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   button: {
     marginTop: 30,
   },
   bottom: {
     marginTop: 50,
-    alignItems: 'center',
+    alignItems: "center",
   },
   message: {
     marginVertical: 10,

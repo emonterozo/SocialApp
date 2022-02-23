@@ -1,18 +1,19 @@
-import React, {useState, useContext} from 'react';
-import {View, StyleSheet} from 'react-native';
-import {TextInput, Button, Text} from 'react-native-paper';
-import {Formik} from 'formik';
-import * as Yup from 'yup';
-import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth';
-import {setDoc, doc} from 'firebase/firestore';
+import React, { useState, useContext } from "react";
+import { View, StyleSheet } from "react-native";
+import { TextInput, Button, Text } from "react-native-paper";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
 
-import {db} from '../../config/firebase';
-import GlobalContext from '../../config/context';
-import {CTextInput} from '../../component';
-import {theme} from '../../styles/theme';
-import {ScrollView} from 'react-native-gesture-handler';
-import {auth} from '../../config/firebase';
-import {setUserData} from '../../utils/utils';
+import { db } from "../../config/firebase";
+import GlobalContext from "../../config/context";
+import { CTextInput } from "../../component";
+import { theme } from "../../styles/theme";
+import { ScrollView } from "react-native-gesture-handler";
+import { auth } from "../../config/firebase";
+import { setUserData } from "../../utils/utils";
+import { DEFAULT_USER_PROFILE_IMAGE } from "../../utils/constant";
 
 interface IRegister {
   navigation: any;
@@ -21,30 +22,30 @@ interface IRegister {
 const validationSchema = Yup.object({
   firstName: Yup.string()
     .trim()
-    .min(2, 'Invalid First Name!')
-    .required('First Name is required!'),
+    .min(2, "Invalid First Name!")
+    .required("First Name is required!"),
   lastName: Yup.string()
     .trim()
-    .min(2, 'Invalid Last Name!')
-    .required('Last Name is required!'),
-  email: Yup.string().email('Invalid email!').required('Email is required!'),
+    .min(2, "Invalid Last Name!")
+    .required("Last Name is required!"),
+  email: Yup.string().email("Invalid email!").required("Email is required!"),
   password: Yup.string()
     .trim()
-    .min(8, 'Password is too short!')
-    .required('Password is required!'),
+    .min(8, "Password is too short!")
+    .required("Password is required!"),
   confirmPassword: Yup.string()
-    .equals([Yup.ref('password'), null], 'Password does not match!')
-    .required('Confirm Password is required!'),
+    .equals([Yup.ref("password"), null], "Password does not match!")
+    .required("Confirm Password is required!"),
 });
 
-const Register = ({navigation}: IRegister) => {
-  const {setAuthenticatedUser} = useContext(GlobalContext);
+const Register = ({ navigation }: IRegister) => {
+  const { setAuthenticatedUser } = useContext(GlobalContext);
   const userData = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   };
   const [isFirstNameFocused, setIsFirstNameFocused] = useState(false);
   const [isLastNameFocused, setIsLastNameFocused] = useState(false);
@@ -59,39 +60,25 @@ const Register = ({navigation}: IRegister) => {
   const register = async (values: any, formikActions: any) => {
     await createUserWithEmailAndPassword(auth, values.email, values.password)
       .then((response: any) => {
-        setDoc(doc(db, 'users', response.user.uid), {
+        setDoc(doc(db, "users", response.user.uid), {
           first_name: values.firstName,
           last_name: values.lastName,
-          profile_image_url: 'https://picsum.photos/800',
+          profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
         }).then(() => {
-            const userInfo = {
-              first_name: values.firstName,
-              last_name: values.lastName,
-              profile_image_url: 'https://picsum.photos/800',
-              uid: response.user.uid,
-            };
-            setAuthenticatedUser(userInfo);
-            setUserData(userInfo);
-            formikActions.resetForm();
-            formikActions.setSubmitting(false);
+          const userInfo = {
+            first_name: values.firstName,
+            last_name: values.lastName,
+            profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
+            uid: response.user.uid,
+          };
+          setAuthenticatedUser(userInfo);
+          setUserData(userInfo);
+          formikActions.resetForm();
+          formikActions.setSubmitting(false);
         });
-
-        /*await updateProfile(response.user, {
-          displayName: `${values.firstName} ${values.lastName}`,
-          photoURL: 'https://picsum.photos/800',
-        })
-          .then(() => {
-            const userInfo = auth.currentUser;
-            setAuthenticatedUser(userInfo);
-            setUserData(userInfo);
-            formikActions.resetForm();
-            formikActions.setSubmitting(false);
-          })
-          .catch(err => console.log('dd', err));*/
       })
-      .catch(error => {
+      .catch((error) => {
         formikActions.setSubmitting(false);
-        console.log('error', error);
       });
   };
 
@@ -101,9 +88,10 @@ const Register = ({navigation}: IRegister) => {
         <Formik
           initialValues={userData}
           validationSchema={validationSchema}
-          onSubmit={register}>
-          {({values, errors, isSubmitting, handleChange, handleSubmit}) => {
-            const {firstName, lastName, email, password, confirmPassword} =
+          onSubmit={register}
+        >
+          {({ values, errors, isSubmitting, handleChange, handleSubmit }) => {
+            const { firstName, lastName, email, password, confirmPassword } =
               values;
             return (
               <View style={styles.scrollView}>
@@ -112,7 +100,7 @@ const Register = ({navigation}: IRegister) => {
                     label="First Name"
                     placeholder="First Name"
                     value={firstName}
-                    onChangeText={handleChange('firstName')}
+                    onChangeText={handleChange("firstName")}
                     error={errors.firstName}
                     isFocused={isFirstNameFocused}
                     onFocus={() => setIsFirstNameFocused(true)}
@@ -122,7 +110,7 @@ const Register = ({navigation}: IRegister) => {
                     label="Last Name"
                     placeholder="Last Name"
                     value={lastName}
-                    onChangeText={handleChange('lastName')}
+                    onChangeText={handleChange("lastName")}
                     error={errors.lastName}
                     isFocused={isLastNameFocused}
                     onFocus={() => setIsLastNameFocused(true)}
@@ -132,7 +120,7 @@ const Register = ({navigation}: IRegister) => {
                     label="Email"
                     placeholder="Email"
                     value={email}
-                    onChangeText={handleChange('email')}
+                    onChangeText={handleChange("email")}
                     error={errors.email}
                     isFocused={isEmailFocused}
                     onFocus={() => setIsEmailFocused(true)}
@@ -142,7 +130,7 @@ const Register = ({navigation}: IRegister) => {
                     label="Password"
                     placeholder="Password"
                     value={password}
-                    onChangeText={handleChange('password')}
+                    onChangeText={handleChange("password")}
                     error={errors.password}
                     isFocused={isPasswordFocused}
                     onFocus={() => setIsPasswordFocused(true)}
@@ -150,7 +138,7 @@ const Register = ({navigation}: IRegister) => {
                     isSecureText={isPasswordSecured}
                     right={
                       <TextInput.Icon
-                        name={isPasswordSecured ? 'eye-off' : 'eye'}
+                        name={isPasswordSecured ? "eye-off" : "eye"}
                         color={theme.colors.gray}
                         onPress={() => setIsPasswordSecured(!isPasswordSecured)}
                       />
@@ -160,7 +148,7 @@ const Register = ({navigation}: IRegister) => {
                     label="Confirm Password"
                     placeholder="Confirm Password"
                     value={confirmPassword}
-                    onChangeText={handleChange('confirmPassword')}
+                    onChangeText={handleChange("confirmPassword")}
                     error={errors.confirmPassword}
                     isFocused={isConfirmPasswordFocused}
                     onFocus={() => setIsConfirmPasswordFocused(true)}
@@ -168,7 +156,7 @@ const Register = ({navigation}: IRegister) => {
                     isSecureText={isConfirmPasswordSecured}
                     right={
                       <TextInput.Icon
-                        name={isConfirmPasswordSecured ? 'eye-off' : 'eye'}
+                        name={isConfirmPasswordSecured ? "eye-off" : "eye"}
                         color={theme.colors.gray}
                         onPress={() =>
                           setIsConfirmPasswordSecured(!isConfirmPasswordSecured)
@@ -181,7 +169,8 @@ const Register = ({navigation}: IRegister) => {
                     mode="contained"
                     style={styles.button}
                     onPress={handleSubmit}
-                    loading={isSubmitting}>
+                    loading={isSubmitting}
+                  >
                     Register
                   </Button>
                   <View style={styles.bottom}>
@@ -189,7 +178,8 @@ const Register = ({navigation}: IRegister) => {
                     <Button
                       mode="text"
                       uppercase={false}
-                      onPress={() => navigation.navigate('Login')}>
+                      onPress={() => navigation.navigate("Login")}
+                    >
                       Login
                     </Button>
                   </View>
@@ -207,21 +197,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 30,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   scrollView: {
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   top: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   button: {
     marginTop: 30,
   },
   bottom: {
     marginTop: 50,
-    alignItems: 'center',
+    alignItems: "center",
   },
 });
 

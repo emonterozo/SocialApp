@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useContext} from 'react';
-import {View, StyleSheet, FlatList} from 'react-native';
+import React, { useEffect, useState, useContext } from "react";
+import { View, StyleSheet, FlatList } from "react-native";
 import {
   Text,
   TextInput,
@@ -9,7 +9,7 @@ import {
   Paragraph,
   Caption,
   Title,
-} from 'react-native-paper';
+} from "react-native-paper";
 import {
   collection,
   query,
@@ -19,89 +19,102 @@ import {
   doc,
   updateDoc,
   getDoc,
-} from 'firebase/firestore';
-import moment from 'moment';
-import {isEmpty} from 'lodash';
+} from "firebase/firestore";
+import moment from "moment";
+import { isEmpty } from "lodash";
 
-import {CommentsRegular} from '../../../assets/svg';
-import {db} from '../../../config/firebase';
-import GlobalContext from '../../../config/context';
+import { CommentsRegular } from "../../../assets/svg";
+import { db } from "../../../config/firebase";
+import GlobalContext from "../../../config/context";
 
 interface IComment {
   navigation: any;
   route: any;
 }
 
-const Comment = ({navigation, route}: IComment) => {
-  const {authenticatedUser} = useContext(GlobalContext);
-  const {collectionId} = route.params;
+const Comment = ({ navigation, route }: IComment) => {
+  const { authenticatedUser } = useContext(GlobalContext);
+  const { collectionId } = route.params;
   const [comments, setComments] = useState<any[]>([]);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
 
-  const setComment = () => {
-    const date = moment(new Date()).format('YYYY-MM-DD-HH:mm:ss');
+  // will add new comment
+  const addComment = () => {
+    const date = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
     setDoc(
       doc(
         db,
         `feed/${collectionId}/comments`,
-        `comment-${authenticatedUser.uid}-${date}`,
+        `comment-${authenticatedUser.uid}-${date}`
       ),
       {
         comment: text,
-        //name: authenticatedUser.first_name,
-        //profile_image_url: authenticatedUser.profile_image_url,
         timestamp: new Date(),
         uid: authenticatedUser.uid,
-        userRef: doc(db, `/users/${authenticatedUser.uid}`)
-      },
+        userRef: doc(db, `/users/${authenticatedUser.uid}`),
+      }
     ).then(async () => {
-      setText('')
-      const feedRef = doc(db, 'feed', collectionId);
+      setText("");
+      const feedRef = doc(db, "feed", collectionId);
 
       const feedSnap = await getDoc(feedRef);
-      const data = feedSnap.data()
-      
+      const data = feedSnap.data();
+
+      // will increment comments count
       updateDoc(feedRef, {
-        comments_count: data?.comments_count + 1
-      }).then(() => console.log('success'));
+        comments_count: data?.comments_count + 1,
+      }).then(() => console.log("success"));
     });
   };
 
+  // will get comment data realtime
   useEffect(() => {
+    getComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const getComments = () => {
     const qry = query(
       collection(db, `feed/${collectionId}/comments`),
-      orderBy('timestamp', 'asc'),
+      orderBy("timestamp", "asc")
     );
     onSnapshot(qry, async (querySnapshot) => {
       let commentsData: any[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         commentsData.push(doc.data());
       });
 
+      // will get information of the commentator
       let feedDataHolder: any[] = [];
-      await Promise.all(commentsData.map(async (item) => {
-        let userData =  await getDoc(item.userRef);
-        feedDataHolder.push({
-          ...item,
-          user: userData.data()
-        });
-      }));
-      
-      setComments(feedDataHolder);
-      
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      await Promise.all(
+        commentsData.map(async (item) => {
+          let userData = await getDoc(item.userRef);
+          feedDataHolder.push({
+            ...item,
+            user: userData.data(),
+          });
+        })
+      );
 
-  const renderComment = ({item}: any) => {
+      setComments(feedDataHolder);
+    });
+  };
+
+  // will render comment
+  const renderComment = ({ item }: any) => {
     const interval = new Date(item.timestamp.seconds * 1000);
     return (
       <View>
         <View style={styles.comment}>
-          <Avatar.Image size={30} source={{uri: item.user.profile_image_url}} />
+          <Avatar.Image
+            size={30}
+            source={{ uri: item.user.profile_image_url }}
+          />
           <View style={styles.messageContainer}>
-            <Text style={styles.name}>{`${item.user.first_name} ${item.user.last_name}`}</Text>
+            <Text
+              style={styles.name}
+            >{`${item.user.first_name} ${item.user.last_name}`}</Text>
             <Paragraph>{item.comment}</Paragraph>
           </View>
         </View>
@@ -120,17 +133,18 @@ const Comment = ({navigation, route}: IComment) => {
       </Portal>
       <View style={styles.top}>
         <View style={styles.topContent}>
-          <FlatList contentContainerStyle={comments.length <= 0 && styles.empty} data={comments} renderItem={renderComment} ListEmptyComponent={
-            <View style={{alignItems: 'center'}}>
-              <CommentsRegular
-                height={100}
-                width={100}
-                color="#777777" 
-              />
-              <Title>No comment yet</Title>
-              <Caption>Be the first to comment.</Caption>
-            </View>
-          } />
+          <FlatList
+            contentContainerStyle={comments.length <= 0 && styles.empty}
+            data={comments}
+            renderItem={renderComment}
+            ListEmptyComponent={
+              <View style={{ alignItems: "center" }}>
+                <CommentsRegular height={100} width={100} color="#777777" />
+                <Title>No comment yet</Title>
+                <Caption>Be the first to comment.</Caption>
+              </View>
+            }
+          />
         </View>
       </View>
       <View style={styles.bottom}>
@@ -138,11 +152,10 @@ const Comment = ({navigation, route}: IComment) => {
           mode="outlined"
           placeholder="Write a comment"
           value={text}
-          onChangeText={val => setText(val)}
-          onSubmitEditing={() => console.log('sub')}
+          onChangeText={(val) => setText(val)}
           right={
             !isEmpty(text) && (
-              <TextInput.Icon name="send" onPress={setComment} />
+              <TextInput.Icon name="send" onPress={addComment} />
             )
           }
         />
@@ -156,41 +169,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   top: {
-    height: '90%',
+    height: "90%",
   },
   topContent: {
     marginTop: 60,
     marginHorizontal: 5,
   },
   bottom: {
-    height: '10%',
-    justifyContent: 'center',
+    height: "10%",
+    justifyContent: "center",
     marginHorizontal: 5,
   },
   comment: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginVertical: 5,
   },
   messageContainer: {
     flex: 1,
     borderRadius: 15,
-    borderColor: 'blue',
+    borderColor: "blue",
     borderWidth: 1,
     padding: 10,
     marginLeft: 5,
   },
   name: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   time: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     paddingHorizontal: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   empty: {
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

@@ -1,14 +1,14 @@
-import React, {useContext} from 'react';
-import {SafeAreaView, StyleSheet, ImageBackground, View} from 'react-native';
-import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
-import {Button, Divider, Text} from 'react-native-paper';
+import React, { useContext } from "react";
+import { SafeAreaView, StyleSheet, ImageBackground, View } from "react-native";
+import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
+import { Button, Divider, Text } from "react-native-paper";
 
-import GlobalContext from '../config/context';
-import {removeUserData} from '../utils/utils';
+import GlobalContext from "../config/context";
+import { removeUserData } from "../utils/utils";
 
 const CustomDrawer = (props: any) => {
-  const {authenticatedUser, setAuthenticatedUser} = useContext(GlobalContext);
-  const {state, navigation} = props;
+  const { authenticatedUser, setAuthenticatedUser } = useContext(GlobalContext);
+  const { state, navigation } = props;
 
   const renderDrawer = () => {
     return state.routes.map((route: any, index: any) => {
@@ -30,8 +30,9 @@ const CustomDrawer = (props: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground
-        source={{uri: 'https://picsum.photos/700'}}
-        style={styles.banner}>
+        source={{ uri: "https://picsum.photos/700" }}
+        style={styles.banner}
+      >
         <View style={styles.subheader}>
           <Text style={styles.subheadertText}>
             {`${authenticatedUser.first_name} ${authenticatedUser.last_name}`}
@@ -47,7 +48,8 @@ const CustomDrawer = (props: any) => {
             mode="contained"
             icon="logout"
             style={styles.button}
-            onPress={logout}>
+            onPress={logout}
+          >
             Logout
           </Button>
         </View>
@@ -66,25 +68,25 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   banner: {
-    resizeMode: 'cover',
-    width: '100%',
+    resizeMode: "cover",
+    width: "100%",
     height: 200,
   },
   subheader: {
-    backgroundColor: 'red',
+    backgroundColor: "red",
     padding: 16,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     left: 0,
     bottom: 0,
   },
   subheadertText: {
-    color: '#ffffff',
+    color: "#ffffff",
   },
   divider: {
     borderWidth: 0.3,
     margin: 5,
-    borderColor: 'gray',
+    borderColor: "gray",
   },
   drawer: {
     flex: 1,
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   button: {
     marginBottom: 50,

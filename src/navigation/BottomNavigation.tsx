@@ -1,9 +1,9 @@
-import React from 'react';
-import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
-import {StyleSheet} from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import React from "react";
+import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
+import { StyleSheet } from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import {Feed, Message, Notification} from '../container/Tab/index';
+import { Feed, Message, Notification } from "../container/Tab/index";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -19,12 +19,12 @@ const BottomNavigation = () => {
       barStyle={styles.bottomTab}
       activeColor="blue"
       inactiveColor="gray"
-      screenOptions={({route}) => ({
-        tabBarIcon: ({color}) => {
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color }) => {
           const icons: IIcons = {
-            Feed: 'newspaper-variant-outline',
-            Message: 'message',
-            Notification: 'bell',
+            Feed: "newspaper-variant-outline",
+            Message: "message",
+            Notification: "bell",
           };
           return (
             <MaterialCommunityIcons
@@ -35,7 +35,8 @@ const BottomNavigation = () => {
           );
         },
         headerShown: false,
-      })}>
+      })}
+    >
       <Tab.Screen name="Feed" component={Feed} />
       <Tab.Screen name="Message" component={Message} />
       <Tab.Screen name="Notification" component={Notification} />
@@ -45,7 +46,7 @@ const BottomNavigation = () => {
 
 const styles = StyleSheet.create({
   bottomTab: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     height: 60,
   },
 });

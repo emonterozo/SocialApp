@@ -1,13 +1,13 @@
-import React from 'react';
-import {View, Text} from 'react-native';
+import React from "react";
+import { View, Text } from "react-native";
 
-import {Header} from '../../../component';
+import { Header } from "../../../component";
 
 interface INotification {
   navigation: any;
 }
 
-const Notification = ({navigation}: INotification) => {
+const Notification = ({ navigation }: INotification) => {
   return (
     <View>
       <Header
