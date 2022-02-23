@@ -1,22 +1,22 @@
-import React, { useState, useContext } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text } from 'react-native-paper';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { isEmpty } from 'lodash';
+import React, {useState, useContext} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {TextInput, Button, Text} from 'react-native-paper';
+import {signInWithEmailAndPassword} from 'firebase/auth';
+import {isEmpty} from 'lodash';
 import { doc, getDoc } from 'firebase/firestore';
 
 import GlobalContext from '../../config/context';
-import { auth, db } from '../../config/firebase';
-import { CTextInput, Message } from '../../component';
-import { theme } from '../../styles/theme';
-import { setUserData } from '../../utils/utils';
+import {auth, db} from '../../config/firebase';
+import {CTextInput, Message} from '../../component';
+import {theme} from '../../styles/theme';
+import {setUserData} from '../../utils/utils';
 
 interface ILogin {
   navigation: any;
 }
 
-function Login({ navigation }: ILogin) {
-  const { setAuthenticatedUser } = useContext(GlobalContext);
+const Login = ({navigation}: ILogin) => {
+  const {setAuthenticatedUser} = useContext(GlobalContext);
   const [user, setUser] = useState({
     email: '',
     password: '',
@@ -31,17 +31,17 @@ function Login({ navigation }: ILogin) {
       .then(async (response) => {
         const userRef = doc(db, 'users', response.user.uid);
         const userSnap = await getDoc(userRef);
-        const data = userSnap.data();
+        const data = userSnap.data()
         const userInfo = {
           first_name: data?.first_name,
           last_name: data?.last_name,
           profile_image_url: data?.profile_image_url,
           uid: response.user.uid,
-        };
+        }
         setAuthenticatedUser(userInfo);
         setUserData(userInfo);
       })
-      .catch((error) => {
+      .catch(error => {
         setError('Invalid Credentials');
         console.log('error', error);
       });
@@ -64,7 +64,7 @@ function Login({ navigation }: ILogin) {
           label="Email"
           placeholder="Email"
           value={user.email}
-          onChangeText={(text) =>
+          onChangeText={text =>
             setUser({
               ...user,
               email: text,
@@ -78,7 +78,7 @@ function Login({ navigation }: ILogin) {
           label="Password"
           placeholder="Password"
           value={user.password}
-          onChangeText={(text) =>
+          onChangeText={text =>
             setUser({
               ...user,
               password: text,
@@ -99,22 +99,26 @@ function Login({ navigation }: ILogin) {
         <Button
           icon="login"
           mode="contained"
-          disabled={!!(isEmpty(user.email) || isEmpty(user.password))}
+          disabled={
+            isEmpty(user.email) || isEmpty(user.password) ? true : false
+          }
           style={styles.button}
-          onPress={login}
-        >
+          onPress={login}>
           Login
         </Button>
         <View style={styles.bottom}>
           <Text>Don't have account?</Text>
-          <Button mode="text" uppercase={false} onPress={() => navigation.replace('Register')}>
+          <Button
+            mode="text"
+            uppercase={false}
+            onPress={() => navigation.replace('Register')}>
             Register
           </Button>
         </View>
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

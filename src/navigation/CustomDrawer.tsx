@@ -1,14 +1,14 @@
-import React, { useContext } from 'react';
-import { SafeAreaView, StyleSheet, ImageBackground, View } from 'react-native';
-import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
-import { Button, Divider, Text } from 'react-native-paper';
+import React, {useContext} from 'react';
+import {SafeAreaView, StyleSheet, ImageBackground, View} from 'react-native';
+import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
+import {Button, Divider, Text} from 'react-native-paper';
 
 import GlobalContext from '../config/context';
-import { removeUserData } from '../utils/utils';
+import {removeUserData} from '../utils/utils';
 
-function CustomDrawer(props: any) {
-  const { authenticatedUser, setAuthenticatedUser } = useContext(GlobalContext);
-  const { state, navigation } = props;
+const CustomDrawer = (props: any) => {
+  const {authenticatedUser, setAuthenticatedUser} = useContext(GlobalContext);
+  const {state, navigation} = props;
 
   const renderDrawer = () => {
     return state.routes.map((route: any, index: any) => {
@@ -29,7 +29,9 @@ function CustomDrawer(props: any) {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <ImageBackground source={{ uri: 'https://picsum.photos/700' }} style={styles.banner}>
+      <ImageBackground
+        source={{uri: 'https://picsum.photos/700'}}
+        style={styles.banner}>
         <View style={styles.subheader}>
           <Text style={styles.subheadertText}>
             {`${authenticatedUser.first_name} ${authenticatedUser.last_name}`}
@@ -41,14 +43,18 @@ function CustomDrawer(props: any) {
         {renderDrawer()}
         <Divider style={styles.divider} />
         <View style={styles.buttonContainer}>
-          <Button mode="contained" icon="logout" style={styles.button} onPress={logout}>
+          <Button
+            mode="contained"
+            icon="logout"
+            style={styles.button}
+            onPress={logout}>
             Logout
           </Button>
         </View>
       </DrawerContentScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

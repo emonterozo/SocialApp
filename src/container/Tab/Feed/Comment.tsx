@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import React, {useEffect, useState, useContext} from 'react';
+import {View, StyleSheet, FlatList} from 'react-native';
 import {
   Text,
   TextInput,
@@ -21,10 +21,10 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import moment from 'moment';
-import { isEmpty } from 'lodash';
+import {isEmpty} from 'lodash';
 
-import { CommentsRegular } from '../../../assets/svg';
-import { db } from '../../../config/firebase';
+import {CommentsRegular} from '../../../assets/svg';
+import {db} from '../../../config/firebase';
 import GlobalContext from '../../../config/context';
 
 interface IComment {
@@ -32,65 +32,74 @@ interface IComment {
   route: any;
 }
 
-function Comment({ navigation, route }: IComment) {
-  const { authenticatedUser } = useContext(GlobalContext);
-  const { collectionId } = route.params;
+const Comment = ({navigation, route}: IComment) => {
+  const {authenticatedUser} = useContext(GlobalContext);
+  const {collectionId} = route.params;
   const [comments, setComments] = useState<any[]>([]);
   const [text, setText] = useState('');
 
   const setComment = () => {
     const date = moment(new Date()).format('YYYY-MM-DD-HH:mm:ss');
-    setDoc(doc(db, `feed/${collectionId}/comments`, `comment-${authenticatedUser.uid}-${date}`), {
-      comment: text,
-      // name: authenticatedUser.first_name,
-      // profile_image_url: authenticatedUser.profile_image_url,
-      timestamp: new Date(),
-      uid: authenticatedUser.uid,
-      userRef: doc(db, `/users/${authenticatedUser.uid}`),
-    }).then(async () => {
-      setText('');
+    setDoc(
+      doc(
+        db,
+        `feed/${collectionId}/comments`,
+        `comment-${authenticatedUser.uid}-${date}`,
+      ),
+      {
+        comment: text,
+        //name: authenticatedUser.first_name,
+        //profile_image_url: authenticatedUser.profile_image_url,
+        timestamp: new Date(),
+        uid: authenticatedUser.uid,
+        userRef: doc(db, `/users/${authenticatedUser.uid}`)
+      },
+    ).then(async () => {
+      setText('')
       const feedRef = doc(db, 'feed', collectionId);
 
       const feedSnap = await getDoc(feedRef);
-      const data = feedSnap.data();
-
+      const data = feedSnap.data()
+      
       updateDoc(feedRef, {
-        comments_count: data?.comments_count + 1,
+        comments_count: data?.comments_count + 1
       }).then(() => console.log('success'));
     });
   };
 
   useEffect(() => {
-    const qry = query(collection(db, `feed/${collectionId}/comments`), orderBy('timestamp', 'asc'));
+    const qry = query(
+      collection(db, `feed/${collectionId}/comments`),
+      orderBy('timestamp', 'asc'),
+    );
     onSnapshot(qry, async (querySnapshot) => {
-      const commentsData: any[] = [];
-
+      let commentsData: any[] = [];
+      
       querySnapshot.forEach((doc) => {
         commentsData.push(doc.data());
       });
 
-      const feedDataHolder: any[] = [];
-      await Promise.all(
-        commentsData.map(async (item) => {
-          const userData = await getDoc(item.userRef);
-          feedDataHolder.push({
-            ...item,
-            user: userData.data(),
-          });
-        })
-      );
-
+      let feedDataHolder: any[] = [];
+      await Promise.all(commentsData.map(async (item) => {
+        let userData =  await getDoc(item.userRef);
+        feedDataHolder.push({
+          ...item,
+          user: userData.data()
+        });
+      }));
+      
       setComments(feedDataHolder);
+      
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const renderComment = ({ item }: any) => {
+  const renderComment = ({item}: any) => {
     const interval = new Date(item.timestamp.seconds * 1000);
     return (
       <View>
         <View style={styles.comment}>
-          <Avatar.Image size={30} source={{ uri: item.user.profile_image_url }} />
+          <Avatar.Image size={30} source={{uri: item.user.profile_image_url}} />
           <View style={styles.messageContainer}>
             <Text style={styles.name}>{`${item.user.first_name} ${item.user.last_name}`}</Text>
             <Paragraph>{item.comment}</Paragraph>
@@ -111,18 +120,17 @@ function Comment({ navigation, route }: IComment) {
       </Portal>
       <View style={styles.top}>
         <View style={styles.topContent}>
-          <FlatList
-            contentContainerStyle={comments.length <= 0 && styles.empty}
-            data={comments}
-            renderItem={renderComment}
-            ListEmptyComponent={
-              <View style={{ alignItems: 'center' }}>
-                <CommentsRegular height={100} width={100} color="#777777" />
-                <Title>No comment yet</Title>
-                <Caption>Be the first to comment.</Caption>
-              </View>
-            }
-          />
+          <FlatList contentContainerStyle={comments.length <= 0 && styles.empty} data={comments} renderItem={renderComment} ListEmptyComponent={
+            <View style={{alignItems: 'center'}}>
+              <CommentsRegular
+                height={100}
+                width={100}
+                color="#777777" 
+              />
+              <Title>No comment yet</Title>
+              <Caption>Be the first to comment.</Caption>
+            </View>
+          } />
         </View>
       </View>
       <View style={styles.bottom}>
@@ -130,14 +138,18 @@ function Comment({ navigation, route }: IComment) {
           mode="outlined"
           placeholder="Write a comment"
           value={text}
-          onChangeText={(val) => setText(val)}
+          onChangeText={val => setText(val)}
           onSubmitEditing={() => console.log('sub')}
-          right={!isEmpty(text) && <TextInput.Icon name="send" onPress={setComment} />}
+          right={
+            !isEmpty(text) && (
+              <TextInput.Icon name="send" onPress={setComment} />
+            )
+          }
         />
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

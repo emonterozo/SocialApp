@@ -1,8 +1,8 @@
 import React from 'react';
-import { TouchableWithoutFeedback, View, StyleSheet } from 'react-native';
-import { TouchableRipple, Text, Title } from 'react-native-paper';
+import {TouchableWithoutFeedback, View, StyleSheet} from 'react-native';
+import {TouchableRipple, Text, Title} from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { theme } from '../../../styles/theme';
+import {theme} from '../../../styles/theme';
 
 interface IUploadDialog {
   handleOpenCamera: () => void;
@@ -10,7 +10,11 @@ interface IUploadDialog {
   handleHideDialog: () => void;
 }
 
-function UploadDialog({ handleOpenCamera, handleOpenGallery, handleHideDialog }: IUploadDialog) {
+const UploadDialog = ({
+  handleOpenCamera,
+  handleOpenGallery,
+  handleHideDialog,
+}: IUploadDialog) => {
   return (
     <TouchableWithoutFeedback onPress={handleHideDialog}>
       <View style={styles.dialogContainer}>
@@ -18,20 +22,26 @@ function UploadDialog({ handleOpenCamera, handleOpenGallery, handleHideDialog }:
           <TouchableRipple
             onPress={handleOpenCamera}
             hasTVPreferredFocus={false}
-            tvParallaxProperties
-          >
+            tvParallaxProperties>
             <View style={styles.option}>
-              <MaterialCommunityIcons size={30} name="camera" color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                size={30}
+                name="camera"
+                color={theme.colors.primary}
+              />
               <Text style={styles.optionText}>Use Camera</Text>
             </View>
           </TouchableRipple>
           <TouchableRipple
             onPress={handleOpenGallery}
             hasTVPreferredFocus={false}
-            tvParallaxProperties
-          >
+            tvParallaxProperties>
             <View style={styles.option}>
-              <MaterialCommunityIcons size={30} name="upload" color={theme.colors.primary} />
+              <MaterialCommunityIcons
+                size={30}
+                name="upload"
+                color={theme.colors.primary}
+              />
               <Text style={styles.optionText}>Upload from Gallery</Text>
             </View>
           </TouchableRipple>
@@ -39,7 +49,7 @@ function UploadDialog({ handleOpenCamera, handleOpenGallery, handleHideDialog }:
       </View>
     </TouchableWithoutFeedback>
   );
-}
+};
 
 const styles = StyleSheet.create({
   dialogContainer: {
