@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 const HomeStack = createStackNavigator();
 import BottomNavigation from "./BottomNavigation";
-import { Post, Comment } from "../container/Tab";
+import { Post, Comment, Reactors } from "../container/Tab";
 
 const MainScreen = () => {
   return (
@@ -25,6 +25,13 @@ const MainScreen = () => {
       <HomeStack.Screen
         name="Comment"
         component={Comment}
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <HomeStack.Screen
+        name="Reactors"
+        component={Reactors}
         options={() => ({
           headerShown: false,
         })}

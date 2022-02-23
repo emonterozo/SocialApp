@@ -8,6 +8,7 @@ import {
   Paragraph,
   Caption,
   Title,
+  TouchableRipple,
 } from "react-native-paper";
 import {
   collection,
@@ -352,52 +353,58 @@ const Feed = ({ navigation }: IFeed) => {
               style={styles.commentCount}
             >{`${data.comments_count} comments`}</Caption>
           )}
-          <View style={styles.reactionOption}>
-            {renderReactions(item)}
-            {renderReactors(item)}
-            {isReactionsVisible[index] && (
-              <View style={styles.reactionContent}>
-                <View style={styles.reactionContainer}>
-                  <Avatar.Image
-                    style={styles.reaction}
-                    source={REACTION[1]}
-                    size={30}
-                    onTouchEnd={() => toggleReaction(1, item, index)}
-                  />
-                  <Avatar.Image
-                    style={styles.reaction}
-                    source={REACTION[2]}
-                    size={30}
-                    onTouchEnd={() => toggleReaction(2, item, index)}
-                  />
-                  <Avatar.Image
-                    style={styles.reaction}
-                    source={REACTION[3]}
-                    size={30}
-                    onTouchEnd={() => toggleReaction(3, item, index)}
-                  />
-                  <Avatar.Image
-                    style={styles.reaction}
-                    source={REACTION[4]}
-                    size={30}
-                    onTouchEnd={() => toggleReaction(4, item, index)}
-                  />
-                  <Avatar.Image
-                    style={styles.reaction}
-                    source={REACTION[5]}
-                    size={30}
-                    onTouchEnd={() => toggleReaction(5, item, index)}
-                  />
-                  <Avatar.Image
-                    style={styles.reaction}
-                    source={REACTION[6]}
-                    size={30}
-                    onTouchEnd={() => toggleReaction(6, item, index)}
-                  />
-                </View>
+          <TouchableRipple
+            onPress={() =>
+              navigation.navigate("Reactors", { reactedBy: item.reactedBy })
+            }
+          >
+            <View style={styles.reactionOption}>
+              {renderReactions(item)}
+              {renderReactors(item)}
+            </View>
+          </TouchableRipple>
+          {isReactionsVisible[index] && (
+            <View style={styles.reactionContent}>
+              <View style={styles.reactionContainer}>
+                <Avatar.Image
+                  style={styles.reaction}
+                  source={REACTION[1]}
+                  size={30}
+                  onTouchEnd={() => toggleReaction(1, item, index)}
+                />
+                <Avatar.Image
+                  style={styles.reaction}
+                  source={REACTION[2]}
+                  size={30}
+                  onTouchEnd={() => toggleReaction(2, item, index)}
+                />
+                <Avatar.Image
+                  style={styles.reaction}
+                  source={REACTION[3]}
+                  size={30}
+                  onTouchEnd={() => toggleReaction(3, item, index)}
+                />
+                <Avatar.Image
+                  style={styles.reaction}
+                  source={REACTION[4]}
+                  size={30}
+                  onTouchEnd={() => toggleReaction(4, item, index)}
+                />
+                <Avatar.Image
+                  style={styles.reaction}
+                  source={REACTION[5]}
+                  size={30}
+                  onTouchEnd={() => toggleReaction(5, item, index)}
+                />
+                <Avatar.Image
+                  style={styles.reaction}
+                  source={REACTION[6]}
+                  size={30}
+                  onTouchEnd={() => toggleReaction(6, item, index)}
+                />
               </View>
-            )}
-          </View>
+            </View>
+          )}
         </View>
         <Card.Actions style={styles.action}>
           <Button
