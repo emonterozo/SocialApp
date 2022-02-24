@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import {
-  Subheading,
-  Portal,
-  Appbar,
-  Avatar,
-  Caption,
-} from "react-native-paper";
+import { Subheading, Appbar, Avatar, Caption } from "react-native-paper";
 
 import { REACTION } from "../../../config/icon";
 
@@ -17,16 +11,18 @@ const Reactors = ({ navigation, route }) => {
   const [selection, setSelection] = useState(0);
 
   useEffect(() => {
-    const res = {};
-    reactedBy.forEach((obj) => {
-      const key = obj.reaction_code;
-      if (!res[key]) {
-        res[key] = { reactionCode: obj.reaction_code, count: 0 };
-      }
-      res[key].count += 1;
-    });
-    setReactions(Object.values(res));
-  }, []);
+    if (reactedBy.length > 0) {
+      const res = {};
+      reactedBy.map((obj) => {
+        const key = obj.reaction_code;
+        if (!res[key]) {
+          res[key] = { reactionCode: obj.reaction_code, count: 0 };
+        }
+        res[key].count += 1;
+      });
+      setReactions(Object.values(res));
+    }
+  }, [reactedBy]);
 
   useEffect(() => {
     if (selection !== 0) {
@@ -41,12 +37,6 @@ const Reactors = ({ navigation, route }) => {
       setFilteredReactions(reactedBy);
     }
   }, [selection]);
-
-  useEffect(() => {
-    if (reactions.length > 0) {
-      console.log(reactions.length);
-    }
-  }, [reactions]);
 
   const renderItem = ({ item }: any) => {
     return (
@@ -68,39 +58,41 @@ const Reactors = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      <Portal>
-        <Appbar.Header>
-          <Appbar.BackAction onPress={() => navigation.goBack()} />
-          <Appbar.Content title="People who reacted" />
-        </Appbar.Header>
-        <View style={styles.header}>
-          {reactions.length > 1 && (
-            <View style={styles.content}>
-              <Avatar.Image
-                style={styles.icon}
-                size={30}
-                source={require("../../../assets/all.png")}
-                onTouchEnd={() => setSelection(0)}
-              />
-              <Caption>{reactedBy.length}</Caption>
-            </View>
-          )}
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Content title="People who reacted" />
+      </Appbar.Header>
+      <View style={styles.header}>
+        {reactions.length > 1 && (
+          <View style={styles.content}>
+            <Avatar.Image
+              style={styles.icon}
+              size={30}
+              source={require("../../../assets/all.png")}
+              onTouchEnd={() => setSelection(0)}
+            />
+            <Caption>{reactedBy.length}</Caption>
+          </View>
+        )}
 
-          {reactions.length > 0 &&
-            reactions.map((item, i) => (
-              <View key={i} style={styles.content}>
-                <Avatar.Image
-                  style={styles.icon}
-                  size={30}
-                  source={REACTION[item.reactionCode]}
-                  onTouchEnd={() => setSelection(item.reactionCode)}
-                />
-                <Caption>{item.count}</Caption>
-              </View>
-            ))}
-        </View>
-        <FlatList data={filteredReaction} renderItem={renderItem} />
-      </Portal>
+        {reactions.map((item, i) => (
+          <View key={i} style={styles.content}>
+            <Avatar.Image
+              style={styles.icon}
+              size={30}
+              source={REACTION[item.reactionCode]}
+              onTouchEnd={() => setSelection(item.reactionCode)}
+            />
+            <Caption>{item.count}</Caption>
+          </View>
+        ))}
+      </View>
+      <FlatList
+        data={filteredReaction}
+        extraData={reactions}
+        keyExtractor={(item, index) => item.uid}
+        renderItem={renderItem}
+      />
     </View>
   );
 };

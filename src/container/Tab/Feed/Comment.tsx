@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   Appbar,
-  Portal,
   Avatar,
   Paragraph,
   Caption,
@@ -125,12 +124,10 @@ const Comment = ({ navigation, route }: IComment) => {
 
   return (
     <View style={styles.container}>
-      <Portal>
-        <Appbar.Header>
-          <Appbar.BackAction onPress={() => navigation.goBack()} />
-          <Appbar.Content title="Comments" />
-        </Appbar.Header>
-      </Portal>
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigation.goBack()} />
+        <Appbar.Content title="Comments" />
+      </Appbar.Header>
       <View style={styles.top}>
         <View style={styles.topContent}>
           <FlatList
@@ -169,10 +166,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   top: {
-    height: "90%",
+    flex: 1,
   },
   topContent: {
-    marginTop: 60,
     marginHorizontal: 5,
   },
   bottom: {
