@@ -1,11 +1,9 @@
 import React, {
   useState,
-  useEffect,
   useLayoutEffect,
   useCallback,
   useContext,
 } from "react";
-import { TouchableRipple, Text } from "react-native-paper";
 import { GiftedChat } from "react-native-gifted-chat";
 import {
   collection,
@@ -13,12 +11,12 @@ import {
   orderBy,
   query,
   onSnapshot,
-  setDoc,
   doc,
   getDoc,
   updateDoc,
+  where,
+  getDocs,
 } from "firebase/firestore";
-import { signOut } from "firebase/auth";
 
 import GlobalContext from "../../../config/context";
 import { auth, db } from "../../../config/firebase";
@@ -33,42 +31,62 @@ const Chat = ({ route }) => {
   const [toUser, setToUser] = useState(route.params?.toUser);
 
   useLayoutEffect(() => {
-    console.log(toUser);
-    const collectionRef = collection(db, `messages/${conversationId}/chats`);
-    const q = query(collectionRef, orderBy("timestamp", "desc"));
+    if (conversationId) {
+      const collectionRef = collection(db, `messages/${conversationId}/chats`);
+      const q = query(collectionRef, orderBy("timestamp", "desc"));
 
-    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-      let messagesData: any[] = [];
+      const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+        let messagesData: any[] = [];
 
-      querySnapshot.forEach((doc) => {
-        messagesData.push(doc.data());
+        querySnapshot.forEach((doc) => {
+          messagesData.push(doc.data());
+        });
+
+        let messagesDataHolder: any[] = [];
+        await Promise.all(
+          messagesData.map(async (item, i) => {
+            let user = await getDoc(item.userRef);
+            messagesDataHolder.push({
+              _id: i,
+              createdAt: item.timestamp.toDate(),
+              text: item.message,
+              user: {
+                _id: user.data().email,
+                name: `${user.data().first_name} ${user.data().last_name}`,
+                avatar: user.data().profile_image_url,
+              },
+            });
+          })
+        );
+
+        const data = messagesDataHolder.sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        setMessages(data);
       });
 
-      let messagesDataHolder: any[] = [];
-      await Promise.all(
-        messagesData.map(async (item, i) => {
-          let user = await getDoc(item.userRef);
-          messagesDataHolder.push({
-            _id: i,
-            createdAt: item.timestamp.toDate(),
-            text: item.message,
-            user: {
-              _id: user.data().email,
-              name: user.data().email,
-              avatar: user.data().profile_image_url,
-            },
-          });
-        })
+      return unsubscribe;
+    } else {
+      const qry = query(
+        collection(db, "messages"),
+        where("conversation_between", "array-contains", toUser)
       );
 
-      const data = messagesDataHolder.sort((a, b) => {
-        return new Date(b.createdAt) - new Date(a.createdAt);
+      getDocs(qry).then((querySnapshot) => {
+        let messagesData = [];
+        querySnapshot.forEach((doc) => {
+          messagesData.push({
+            ...doc.data(),
+            id: doc.id,
+          });
+        });
+
+        if (messagesData.length > 0) {
+          setConversationId(messagesData[0].id);
+        }
       });
-
-      setMessages(data);
-    });
-
-    return unsubscribe;
+    }
   });
 
   const onSend = useCallback(
@@ -115,15 +133,18 @@ const Chat = ({ route }) => {
   );
 
   return (
-    <GiftedChat
-      messages={messages}
-      showAvatarForEveryMessage={true}
-      onSend={(messages) => onSend(messages)}
-      user={{
-        _id: auth?.currentUser?.email,
-        avatar: authenticatedUser.profile_image_url,
-      }}
-    />
+    <>
+      <Header title="Message" onMenuPress={() => navigation.openDrawer()} />
+      <GiftedChat
+        messages={messages}
+        showAvatarForEveryMessage={true}
+        onSend={(messages) => onSend(messages)}
+        user={{
+          _id: auth?.currentUser?.email,
+          avatar: authenticatedUser.profile_image_url,
+        }}
+      />
+    </>
   );
 };
 
