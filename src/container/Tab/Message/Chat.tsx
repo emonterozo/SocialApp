@@ -17,6 +17,7 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
+import { xor, isEqual } from "lodash";
 
 import GlobalContext from "../../../config/context";
 import { auth, db } from "../../../config/firebase";
@@ -68,20 +69,25 @@ const Chat = ({ route }) => {
 
       return unsubscribe;
     } else {
-      const qry = query(
-        collection(db, "messages"),
-        where("conversation_between", "array-contains", toUser)
-      );
+      const qry = query(collection(db, "messages"));
 
       getDocs(qry).then((querySnapshot) => {
         let messagesData = [];
         querySnapshot.forEach((doc) => {
-          messagesData.push({
-            ...doc.data(),
-            id: doc.id,
-          });
+          if (
+            isEqual(
+              doc.data().conversation_between.sort(),
+              [toUser, auth?.currentUser?.uid].sort()
+            )
+          ) {
+            messagesData.push({
+              ...doc.data(),
+              id: doc.id,
+            });
+          }
         });
 
+        //console.log("messagesDatadsdsadas", messagesData);
         if (messagesData.length > 0) {
           setConversationId(messagesData[0].id);
         }
