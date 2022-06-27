@@ -420,7 +420,12 @@ const Feed = ({ navigation }: IFeed) => {
           </Button>
           <Button
             icon="comment-outline"
-            onPress={() => navigation.navigate("Comment", { collectionId: id })}
+            onPress={() =>
+              navigation.navigate("Comment", {
+                collectionId: id,
+                post_by: data.uid,
+              })
+            }
           >
             Comment
           </Button>

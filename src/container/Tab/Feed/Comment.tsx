@@ -33,7 +33,7 @@ interface IComment {
 
 const Comment = ({ navigation, route }: IComment) => {
   const { authenticatedUser } = useContext(GlobalContext);
-  const { collectionId } = route.params;
+  const { collectionId, post_by } = route.params;
   const [comments, setComments] = useState<any[]>([]);
   const [text, setText] = useState("");
 
@@ -63,6 +63,23 @@ const Comment = ({ navigation, route }: IComment) => {
       updateDoc(feedRef, {
         comments_count: data?.comments_count + 1,
       }).then(() => console.log("success"));
+
+      if (authenticatedUser.uid !== post_by) {
+        addNotification();
+      }
+    });
+  };
+
+  const addNotification = () => {
+    const date = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
+    setDoc(doc(db, `notifications`, `notif-${authenticatedUser.uid}-${date}`), {
+      feedRef: doc(db, `/feed/${collectionId}`),
+      is_read: false,
+      userRef: doc(db, `/users/${authenticatedUser.uid}`),
+      timestamp: new Date(),
+      post_by: post_by,
+    }).then(async () => {
+      // send push notification
     });
   };
 

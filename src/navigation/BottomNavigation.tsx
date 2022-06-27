@@ -39,7 +39,7 @@ const BottomNavigation = () => {
     >
       <Tab.Screen name="Feed" component={Feed} />
       <Tab.Screen name="Message" component={Message} />
-      {/*<Tab.Screen name="Notification" component={Notification} />*/}
+      <Tab.Screen name="Notification" component={Notification} />
     </Tab.Navigator>
   );
 };
