@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SERVER_KEY } from "../config/config";
 import { ASYNC_STORAGE_KEY_USER } from "./constant";
 
 // Will save user data into async storage
@@ -27,5 +28,36 @@ export const removeUserData = async () => {
     return await AsyncStorage.removeItem(ASYNC_STORAGE_KEY_USER);
   } catch (error) {
     return error;
+  }
+};
+
+export const sendPushNotification = async (
+  to: string,
+  title: string,
+  body: string
+) => {
+  const message = {
+    to: to,
+    notification: {
+      title: title,
+      body: body,
+    },
+  };
+
+  let headers = new Headers({
+    "Content-Type": "application/json",
+    Authorization: "key=" + SERVER_KEY,
+  });
+
+  try {
+    let response = await fetch("https://fcm.googleapis.com/fcm/send", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(message),
+    });
+    response = await response.json();
+    console.log("response ", response);
+  } catch (error) {
+    console.log("error ", error);
   }
 };

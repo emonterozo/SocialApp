@@ -5,6 +5,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import messaging from "@react-native-firebase/messaging";
 
 import GlobalContext from "../../config/context";
 import { CTextInput } from "../../component";
@@ -55,7 +56,8 @@ const Register = ({ navigation }: IRegister) => {
   const [isConfirmPasswordSecured, setIsConfirmPasswordSecured] =
     useState(true);
 
-  const register = (values: any, formikActions: any) => {
+  const register = async (values: any, formikActions: any) => {
+    const token = await messaging().getToken();
     auth()
       .createUserWithEmailAndPassword(values.email, values.password)
       .then((response) => {
@@ -67,6 +69,7 @@ const Register = ({ navigation }: IRegister) => {
             last_name: values.lastName,
             email: values.email,
             profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
+            fcm_token: token,
           })
           .then(() => {
             const userInfo = {

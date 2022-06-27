@@ -15,6 +15,7 @@ import firestore from "@react-native-firebase/firestore";
 
 import { CommentsRegular } from "../../../assets/svg";
 import GlobalContext from "../../../config/context";
+import { sendPushNotification } from "../../../utils/utils";
 
 interface IComment {
   navigation: any;
@@ -49,10 +50,10 @@ const Comment = ({ navigation, route }: IComment) => {
             comments_count: firestore.FieldValue.increment(1),
           })
           .then(() => {
-            addNotification();
-            /*if (authenticatedUser.uid !== post_by) {
+            setText("");
+            if (authenticatedUser.uid !== post_by) {
               addNotification();
-            }*/
+            }
           });
       });
   };
@@ -69,8 +70,13 @@ const Comment = ({ navigation, route }: IComment) => {
         timestamp: new Date(),
         post_by: post_by,
       })
-      .then(() => {
-        /// send push notification
+      .then(async () => {
+        const user = await firestore().collection("users").doc(post_by).get();
+        sendPushNotification(
+          user.data()?.fcm_token,
+          "Post Comment",
+          `${authenticatedUser.first_name} ${authenticatedUser.last_name} commented to your post.`
+        );
       });
   };
 

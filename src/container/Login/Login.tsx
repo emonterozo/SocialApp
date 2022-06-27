@@ -4,6 +4,7 @@ import { TextInput, Button, Text } from "react-native-paper";
 import { isEmpty } from "lodash";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import messaging from "@react-native-firebase/messaging";
 
 import GlobalContext from "../../config/context";
 import { CTextInput, Message } from "../../component";
@@ -25,10 +26,16 @@ const Login = ({ navigation }: ILogin) => {
   const [isSecured, setIsSecured] = useState(true);
   const [error, setError] = useState("");
 
-  const login = () => {
+  const login = async () => {
+    const token = await messaging().getToken();
     auth()
       .signInWithEmailAndPassword(user.email, user.password)
       .then(async (response) => {
+        //update token
+        await firestore().collection("users").doc(response.user.uid).update({
+          fcm_token: token,
+        });
+
         const user = await firestore()
           .collection("users")
           .doc(response.user.uid)

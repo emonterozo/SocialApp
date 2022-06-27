@@ -20,6 +20,7 @@ const Notification = ({ navigation }: INotification) => {
   useEffect(() => {
     const subscriber = firestore()
       .collection("notifications")
+      .where("post_by", "==", authenticatedUser.uid)
       .onSnapshot(async (documentSnapshot) => {
         let notificationsData: any[] = [];
 
