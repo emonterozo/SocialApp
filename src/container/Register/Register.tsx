@@ -3,15 +3,13 @@ import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
-import { db } from "../../config/firebase";
 import GlobalContext from "../../config/context";
 import { CTextInput } from "../../component";
 import { theme } from "../../styles/theme";
 import { ScrollView } from "react-native-gesture-handler";
-import { auth } from "../../config/firebase";
 import { setUserData } from "../../utils/utils";
 import { DEFAULT_USER_PROFILE_IMAGE } from "../../utils/constant";
 
@@ -57,27 +55,32 @@ const Register = ({ navigation }: IRegister) => {
   const [isConfirmPasswordSecured, setIsConfirmPasswordSecured] =
     useState(true);
 
-  const register = async (values: any, formikActions: any) => {
-    await createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then((response: any) => {
-        setDoc(doc(db, "users", response.user.uid), {
-          first_name: values.firstName,
-          last_name: values.lastName,
-          email: values.email,
-          profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
-        }).then(() => {
-          const userInfo = {
+  const register = (values: any, formikActions: any) => {
+    auth()
+      .createUserWithEmailAndPassword(values.email, values.password)
+      .then((response) => {
+        firestore()
+          .collection("users")
+          .doc(response.user.uid)
+          .set({
             first_name: values.firstName,
             last_name: values.lastName,
             email: values.email,
             profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
-            uid: response.user.uid,
-          };
-          setAuthenticatedUser(userInfo);
-          setUserData(userInfo);
-          formikActions.resetForm();
-          formikActions.setSubmitting(false);
-        });
+          })
+          .then(() => {
+            const userInfo = {
+              first_name: values.firstName,
+              last_name: values.lastName,
+              email: values.email,
+              profile_image_url: DEFAULT_USER_PROFILE_IMAGE,
+              uid: response.user.uid,
+            };
+            setAuthenticatedUser(userInfo);
+            setUserData(userInfo);
+            formikActions.resetForm();
+            formikActions.setSubmitting(false);
+          });
       })
       .catch((error) => {
         formikActions.setSubmitting(false);

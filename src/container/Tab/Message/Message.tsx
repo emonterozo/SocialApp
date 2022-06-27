@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { View, StyleSheet, FlatList } from "react-native";
 import {
   Avatar,
@@ -8,17 +8,11 @@ import {
   TouchableRipple,
   FAB,
 } from "react-native-paper";
-import {
-  collection,
-  query,
-  onSnapshot,
-  getDoc,
-  where,
-} from "firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 import moment from "moment";
 
 import { CommentsRegular } from "../../../assets/svg";
-import { auth, db } from "../../../config/firebase";
 import { Header } from "../../../component";
 import { theme } from "../../../styles/theme";
 
@@ -29,47 +23,54 @@ interface IMessage {
 const Message = ({ navigation }: IMessage) => {
   const [conversation, setConversation] = useState([]);
 
-  useLayoutEffect(() => {
-    const qry = query(
-      collection(db, "messages"),
-      where("conversation_between", "array-contains", auth?.currentUser?.uid)
-    );
+  useEffect(() => {
+    firestore()
+      .collection("messages")
+      .where("conversation_between", "array-contains", auth().currentUser?.uid)
+      .get()
+      .then(async (querySnapshot) => {
+        let messagesData: any[] = [];
 
-    const unsubscribe = onSnapshot(qry, async (querySnapshot) => {
-      let messagesData: any[] = [];
-
-      querySnapshot.forEach((doc) => {
-        messagesData.push({
-          ...doc.data(),
-          id: doc.id,
-        });
-      });
-
-      let messagesDataHolder: any[] = [];
-      await Promise.all(
-        messagesData.map(async (item) => {
-          let fromUser = await getDoc(item.from);
-          let toUser = await getDoc(item.to);
-          messagesDataHolder.push({
-            ...item,
-            fromUser: fromUser.data(),
-            toUser: toUser.data(),
+        querySnapshot.forEach((doc) => {
+          messagesData.push({
+            ...doc.data(),
+            id: doc.id,
           });
-        })
-      );
+        });
 
-      setConversation(messagesDataHolder);
-    });
+        // will get information of the commentator
+        let messageDataHolder: any[] = [];
+        await Promise.all(
+          messagesData.map(async (item) => {
+            const fromUser = await firestore()
+              .collection("users")
+              .doc(item.from)
+              .get();
 
-    return unsubscribe;
-  });
+            const toUser = await firestore()
+              .collection("users")
+              .doc(item.to)
+              .get();
+
+            messageDataHolder.push({
+              ...item,
+              fromUser: fromUser.data(),
+              toUser: toUser.data(),
+            });
+          })
+        );
+
+        setConversation(messageDataHolder);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   const renderCard = ({ item }: any) => {
     const { fromUser, toUser, last_message, timestamp } = item;
     const interval = new Date(timestamp.seconds * 1000);
 
     const messageDetails =
-      auth?.currentUser?.email === fromUser.email ? toUser : fromUser;
+      auth()?.currentUser?.email === fromUser.email ? toUser : fromUser;
 
     return (
       <TouchableRipple

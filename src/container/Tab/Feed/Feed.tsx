@@ -10,21 +10,12 @@ import {
   Title,
   TouchableRipple,
 } from "react-native-paper";
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  updateDoc,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import firestore from "@react-native-firebase/firestore";
 import moment from "moment";
 import { isEmpty } from "lodash";
 
 import { NewsPaperRegular } from "../../../assets/svg";
 import GlobalContext from "../../../config/context";
-import { db } from "../../../config/firebase";
 import { Header } from "../../../component";
 import { REACTION } from "../../../config/icon";
 import { REACTION_CODE } from "../../../utils/constant";
@@ -51,54 +42,60 @@ const Feed = ({ navigation }: IFeed) => {
     }
   }, [feed]);
 
-  // will get feed data realtime
   useEffect(() => {
-    getFeeds();
-  }, []);
+    const subscriber = firestore()
+      .collection("feed")
+      .onSnapshot(async (documentSnapshot) => {
+        let feedData: any[] = [];
 
-  const getFeeds = () => {
-    const qry = query(collection(db, "feed"), orderBy("timestamp", "desc"));
-    onSnapshot(qry, async (querySnapshot) => {
-      let feedData: any[] = [];
-
-      querySnapshot.forEach((doc) => {
-        feedData.push({
-          id: doc.id,
-          data: doc.data(),
+        documentSnapshot.forEach((doc) => {
+          feedData.push({
+            id: doc.id,
+            data: doc.data(),
+          });
         });
+
+        let feedDataHolder: any[] = [];
+        await Promise.all(
+          feedData.map(async (item) => {
+            let reactedBy: any = [];
+
+            // will get information of the reactor's
+            if (item.data.reactions.length > 0) {
+              await Promise.all(
+                item.data.reactions.map(async (item) => {
+                  const userData = await firestore()
+                    .collection("users")
+                    .doc(item.uid)
+                    .get();
+
+                  reactedBy.push({
+                    ...userData.data(),
+                    ...item,
+                  });
+                })
+              );
+            }
+
+            // will get information of the user who created the feed
+            let userData = await firestore()
+              .collection("users")
+              .doc(item.data.uid)
+              .get();
+            feedDataHolder.push({
+              ...item,
+              reactedBy: reactedBy,
+              user: userData.data(),
+            });
+          })
+        );
+
+        setFeed(feedDataHolder);
       });
 
-      let feedDataHolder: any[] = [];
-      await Promise.all(
-        feedData.map(async (item) => {
-          let reactedBy: any = [];
-
-          // will get information of the reactor's
-          if (item.data.reactions.length > 0) {
-            await Promise.all(
-              item.data.reactions.map(async (item) => {
-                let userData = await getDoc(item.userRef);
-                reactedBy.push({
-                  ...userData.data(),
-                  ...item,
-                });
-              })
-            );
-          }
-
-          // will get information of the user who created the feed
-          let userData = await getDoc(item.data.userRef);
-          feedDataHolder.push({
-            ...item,
-            reactedBy: reactedBy,
-            user: userData.data(),
-          });
-        })
-      );
-
-      setFeed(feedDataHolder);
-    });
-  };
+    // Stop listening for updates when no longer required
+    return () => subscriber();
+  }, []);
 
   // will render reactions icon - top 2 highest
   const renderReactions = (item: any) => {
@@ -231,14 +228,18 @@ const Feed = ({ navigation }: IFeed) => {
           {
             reaction_code: code,
             uid: authenticatedUser.uid,
-            userRef: doc(db, `/users/${authenticatedUser.uid}`),
           },
         ],
       };
     }
 
-    const feedRef = doc(db, "feed", id);
-    updateDoc(feedRef, reactionData).then(() => console.log("success"));
+    firestore()
+      .collection("feed")
+      .doc(id)
+      .update(reactionData)
+      .then(() => {
+        console.log("success");
+      });
   };
 
   // will toggle reaction
@@ -283,14 +284,18 @@ const Feed = ({ navigation }: IFeed) => {
           {
             reaction_code: 1,
             uid: authenticatedUser.uid,
-            userRef: doc(db, `/users/${authenticatedUser.uid}`),
           },
         ],
       };
     }
 
-    const feedRef = doc(db, "feed", id);
-    updateDoc(feedRef, reactionData).then(() => console.log("success"));
+    firestore()
+      .collection("feed")
+      .doc(id)
+      .update(reactionData)
+      .then(() => {
+        console.log("success");
+      });
   };
 
   // will render like button data

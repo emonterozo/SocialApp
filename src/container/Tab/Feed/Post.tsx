@@ -3,12 +3,12 @@ import { View, StyleSheet, Image } from "react-native";
 import { TextInput, Appbar, Button, Portal } from "react-native-paper";
 import ImagePicker from "react-native-image-crop-picker";
 import moment from "moment";
-import { setDoc, doc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 import { ImageRegular } from "../../../assets/svg";
 import GlobalContext from "../../../config/context";
-import { storage, db } from "../../../config/firebase";
 import { UploadDialog } from "../../../component";
 
 interface IPost {
@@ -55,19 +55,30 @@ const Post = ({ navigation }: IPost) => {
     const date = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
     // has imageSource
     if (imageSource) {
-      // convert to bytes
-      const img = await fetch(imageSource);
-      const bytes = await img.blob();
-
       // will store image
-      const storageRef = ref(storage, `post-${authenticatedUser.uid}-${date}`);
-      uploadBytes(storageRef, bytes).then(() => {
-        // will get URL of the stored image
-        getDownloadURL(storageRef).then((URL) => {
-          // will add add new feed
-          setDoc(doc(db, "feed", `post-${authenticatedUser.uid}-${date}`), {
+      const storageRef = storage().ref(
+        `post1-${authenticatedUser.uid}-${date}`
+      );
+      const task = storageRef.putFile(imageSource);
+
+      task.on("state_changed", (taskSnapshot) => {
+        console.log(
+          `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`
+        );
+      });
+
+      task.then(async () => {
+        const url = await storage()
+          .ref(`post1-${authenticatedUser.uid}-${date}`)
+          .getDownloadURL();
+
+        // will add add new feed
+        firestore()
+          .collection("feed")
+          .doc(`post-${authenticatedUser.uid}-${date}`)
+          .set({
             description: description,
-            photo_url: URL,
+            photo_url: url,
             timestamp: new Date(),
             uid: authenticatedUser.uid,
             comments_count: 0,
@@ -81,29 +92,43 @@ const Post = ({ navigation }: IPost) => {
               6: 0,
             },
             reactions: [],
-            userRef: doc(db, `/users/${authenticatedUser.uid}`),
-          }).then(() => navigation.navigate("Feed"));
-        });
+            //userRef: doc(db, `/users/${authenticatedUser.uid}`),
+          })
+          .then(() => {
+            navigation.navigate("Feed");
+          });
       });
+
+      try {
+        await task;
+      } catch (e) {
+        console.error(e);
+      }
     } else {
-      setDoc(doc(db, "feed", `post-${authenticatedUser.uid}-${date}`), {
-        description: description,
-        photo_url: "",
-        timestamp: new Date(),
-        uid: authenticatedUser.uid,
-        comments_count: 0,
-        reactions_count: 0,
-        reaction_code_count: {
-          1: 0,
-          2: 0,
-          3: 0,
-          4: 0,
-          5: 0,
-          6: 0,
-        },
-        reactions: [],
-        userRef: doc(db, `/users/${authenticatedUser.uid}`),
-      }).then(() => navigation.navigate("Feed"));
+      firestore()
+        .collection("feed")
+        .doc(`post-${authenticatedUser.uid}-${date}`)
+        .set({
+          description: description,
+          photo_url: "",
+          timestamp: new Date(),
+          uid: authenticatedUser.uid,
+          comments_count: 0,
+          reactions_count: 0,
+          reaction_code_count: {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+          },
+          reactions: [],
+          //userRef: doc(db, `/users/${authenticatedUser.uid}`),
+        })
+        .then(() => {
+          navigation.navigate("Feed");
+        });
     }
   };
 

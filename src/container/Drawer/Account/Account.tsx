@@ -5,11 +5,10 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import ImagePicker from "react-native-image-crop-picker";
 import { isEqual } from "lodash";
-import { updateEmail } from "firebase/auth";
-import { updateDoc, doc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
+import auth from "@react-native-firebase/auth";
 
-import { auth, db, storage } from "../../../config/firebase";
 import GlobalContext from "../../../config/context";
 import { Header, CTextInput, UploadDialog } from "../../../component";
 import { theme } from "../../../styles/theme";
@@ -76,42 +75,55 @@ const Account = ({ navigation }: IAccount) => {
 
   // will store image
   const storeImage = async (imageSource: any) => {
-    const img = await fetch(imageSource);
-    const bytes = await img.blob();
-
     // will store image
-    const storageRef = ref(storage, `profile-${authenticatedUser.uid}`);
-    return uploadBytes(storageRef, bytes).then(() => {
-      // will get URL of the stored image
-      return getDownloadURL(storageRef).then((URL) => {
-        return URL;
-      });
+    const storageRef = storage().ref(`profile-${authenticatedUser.uid}`);
+    const task = storageRef.putFile(imageSource);
+
+    task.on("state_changed", (taskSnapshot) => {
+      console.log(
+        `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`
+      );
     });
+
+    task.then(async () => {});
+
+    try {
+      await task;
+      const url = await storage()
+        .ref(`profile-${authenticatedUser.uid}`)
+        .getDownloadURL();
+      return url;
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const submit = async (values: any, formikActions: any) => {
-    const userRef = doc(db, "users", authenticatedUser.uid);
     let profileImageURL = authenticatedUser.profile_image_url;
 
     if (isEqual(userData, values)) {
       if (imageSource) {
         profileImageURL = await storeImage(imageSource);
 
-        updateDoc(userRef, {
-          profile_image_url: profileImageURL,
-        }).then(() => {
-          setAuthenticatedUser({
-            ...authenticatedUser,
+        firestore()
+          .collection("users")
+          .doc(authenticatedUser.uid)
+          .update({
             profile_image_url: profileImageURL,
-          });
+          })
+          .then(() => {
+            setAuthenticatedUser({
+              ...authenticatedUser,
+              profile_image_url: profileImageURL,
+            });
 
-          setUserData({
-            ...authenticatedUser,
-            profile_image_url: profileImageURL,
+            setUserData({
+              ...authenticatedUser,
+              profile_image_url: profileImageURL,
+            });
+            navigation.navigate("Home");
+            formikActions.setSubmitting(false);
           });
-          navigation.navigate("Home");
-          formikActions.setSubmitting(false);
-        });
       }
     } else {
       if (imageSource) {
@@ -119,36 +131,40 @@ const Account = ({ navigation }: IAccount) => {
       }
 
       // update email
-      updateEmail(auth.currentUser, values.email)
+      const user = auth().currentUser;
+      user
+        ?.updateEmail(values.email)
         .then(() => {
-          updateDoc(userRef, {
-            first_name: values.firstName,
-            last_name: values.lastName,
-            email: values.email,
-            profile_image_url: profileImageURL,
-          }).then(() => {
-            setAuthenticatedUser({
-              ...authenticatedUser,
+          firestore()
+            .collection("users")
+            .doc(authenticatedUser.uid)
+            .update({
               first_name: values.firstName,
               last_name: values.lastName,
               email: values.email,
               profile_image_url: profileImageURL,
-            });
+            })
+            .then(() => {
+              setAuthenticatedUser({
+                ...authenticatedUser,
+                first_name: values.firstName,
+                last_name: values.lastName,
+                email: values.email,
+                profile_image_url: profileImageURL,
+              });
 
-            setUserData({
-              ...authenticatedUser,
-              first_name: values.firstName,
-              last_name: values.lastName,
-              email: values.email,
-              profile_image_url: profileImageURL,
+              setUserData({
+                ...authenticatedUser,
+                first_name: values.firstName,
+                last_name: values.lastName,
+                email: values.email,
+                profile_image_url: profileImageURL,
+              });
+              navigation.navigate("Home");
+              formikActions.setSubmitting(false);
             });
-            navigation.navigate("Home");
-            formikActions.setSubmitting(false);
-          });
         })
-        .catch((error) => {
-          console.log("error", error);
-        });
+        .catch((err) => console.log(err));
     }
   };
   return (

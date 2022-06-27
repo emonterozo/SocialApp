@@ -1,18 +1,10 @@
-import React, { useContext, useLayoutEffect, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { View, StyleSheet, FlatList } from "react-native";
 import { Text, Avatar, Caption, Title } from "react-native-paper";
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  getDoc,
-  where,
-} from "firebase/firestore";
 import moment from "moment";
+import firestore from "@react-native-firebase/firestore";
 
 import { CommentsRegular } from "../../../assets/svg";
-import { db } from "../../../config/firebase";
 import GlobalContext from "../../../config/context";
 
 import { Header } from "../../../component";
@@ -25,39 +17,43 @@ const Notification = ({ navigation }: INotification) => {
   const { authenticatedUser } = useContext(GlobalContext);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  useLayoutEffect(() => {
-    const qry = query(
-      collection(db, "notifications"),
-      //where("post_by", "==", authenticatedUser.uid),
-      orderBy("timestamp", "asc")
-    );
+  useEffect(() => {
+    const subscriber = firestore()
+      .collection("notifications")
+      .onSnapshot(async (documentSnapshot) => {
+        let notificationsData: any[] = [];
 
-    const unsubscribe = onSnapshot(qry, async (querySnapshot) => {
-      let notificationsData: any[] = [];
+        documentSnapshot.forEach((doc) => {
+          notificationsData.push(doc.data());
+        });
 
-      querySnapshot.forEach((doc) => {
-        notificationsData.push(doc.data());
+        // will get information of the commentator
+        let notifDataHolder: any[] = [];
+        await Promise.all(
+          notificationsData.map(async (item) => {
+            let userData = await firestore()
+              .collection("users")
+              .doc(item.comment_from)
+              .get();
+            let feedData = await firestore()
+              .collection("users")
+              .doc(item.feed_id)
+              .get();
+
+            notifDataHolder.push({
+              ...item,
+              feedInfo: feedData.id,
+              user: userData.data(),
+            });
+          })
+        );
+        setNotifications(notifDataHolder);
       });
 
-      // will get information of the commentator
-      let notifDataHolder: any[] = [];
-      await Promise.all(
-        notificationsData.map(async (item) => {
-          let userData = await getDoc(item.userRef);
-          let feedData = await getDoc(item.feedRef);
-
-          notifDataHolder.push({
-            ...item,
-            feedInfo: feedData.id,
-            user: userData.data(),
-          });
-        })
-      );
-      setNotifications(notifDataHolder);
-    });
-
-    return unsubscribe;
-  });
+    // Stop listening for updates when no longer required
+    return () => subscriber();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // will render comment
   const renderNotification = ({ item }: any) => {

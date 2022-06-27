@@ -1,30 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, FlatList } from "react-native";
 import { Avatar, IconButton, Text } from "react-native-paper";
-import { collection, query, getDocs, where } from "firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
-import { auth, db } from "../../../config/firebase";
 import { Header } from "../../../component";
 
 const People = ({ navigation }) => {
   const [people, setPeople] = useState([]);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "users"),
-      where("email", "!=", auth?.currentUser?.email)
-    );
-    getDocs(q).then((querySnapshot) => {
-      let peopleHolder = [];
-      querySnapshot.forEach((doc) => {
-        peopleHolder.push({
-          ...doc.data(),
-          id: doc.id,
+    firestore()
+      .collection("users")
+      .where("email", "!=", auth().currentUser?.email)
+      .get()
+      .then((querySnapshot) => {
+        let peopleHolder = [];
+        querySnapshot.forEach((doc) => {
+          peopleHolder.push({
+            ...doc.data(),
+            id: doc.id,
+          });
         });
-      });
 
-      setPeople(peopleHolder);
-    });
+        setPeople(peopleHolder);
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   const renderItem = ({ item }) => {

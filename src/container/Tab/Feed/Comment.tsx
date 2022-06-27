@@ -9,21 +9,11 @@ import {
   Caption,
   Title,
 } from "react-native-paper";
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  setDoc,
-  doc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
 import moment from "moment";
 import { isEmpty } from "lodash";
+import firestore from "@react-native-firebase/firestore";
 
 import { CommentsRegular } from "../../../assets/svg";
-import { db } from "../../../config/firebase";
 import GlobalContext from "../../../config/context";
 
 interface IComment {
@@ -40,82 +30,83 @@ const Comment = ({ navigation, route }: IComment) => {
   // will add new comment
   const addComment = () => {
     const date = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
-    setDoc(
-      doc(
-        db,
-        `feed/${collectionId}/comments`,
-        `comment-${authenticatedUser.uid}-${date}`
-      ),
-      {
+    // will add new comment
+    firestore()
+      .collection(`feed/${collectionId}/comments`)
+      .doc(`comment-${authenticatedUser.uid}-${date}`)
+      .set({
         comment: text,
         timestamp: new Date(),
         uid: authenticatedUser.uid,
-        userRef: doc(db, `/users/${authenticatedUser.uid}`),
-      }
-    ).then(async () => {
-      setText("");
-      const feedRef = doc(db, "feed", collectionId);
-
-      const feedSnap = await getDoc(feedRef);
-      const data = feedSnap.data();
-
-      // will increment comments count
-      updateDoc(feedRef, {
-        comments_count: data?.comments_count + 1,
-      }).then(() => console.log("success"));
-
-      if (authenticatedUser.uid !== post_by) {
-        addNotification();
-      }
-    });
+        //userRef: doc(db, `/users/${authenticatedUser.uid}`),
+      })
+      .then(() => {
+        // will increment comments_count
+        firestore()
+          .collection("feed")
+          .doc(collectionId)
+          .update({
+            comments_count: firestore.FieldValue.increment(1),
+          })
+          .then(() => {
+            addNotification();
+            /*if (authenticatedUser.uid !== post_by) {
+              addNotification();
+            }*/
+          });
+      });
   };
 
   const addNotification = () => {
     const date = moment(new Date()).format("YYYY-MM-DD-HH:mm:ss");
-    setDoc(doc(db, `notifications`, `notif-${authenticatedUser.uid}-${date}`), {
-      feedRef: doc(db, `/feed/${collectionId}`),
-      is_read: false,
-      userRef: doc(db, `/users/${authenticatedUser.uid}`),
-      timestamp: new Date(),
-      post_by: post_by,
-    }).then(async () => {
-      // send push notification
-    });
+    firestore()
+      .collection("notifications")
+      .doc(`notif-${authenticatedUser.uid}-${date}`)
+      .set({
+        feed_id: collectionId,
+        is_read: false,
+        comment_from: authenticatedUser.uid,
+        timestamp: new Date(),
+        post_by: post_by,
+      })
+      .then(() => {
+        /// send push notification
+      });
   };
 
   // will get comment data realtime
   useEffect(() => {
-    getComments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const subscriber = firestore()
+      .collection(`feed/${collectionId}/comments`)
+      .onSnapshot(async (documentSnapshot) => {
+        let commentsData: any[] = [];
 
-  const getComments = () => {
-    const qry = query(
-      collection(db, `feed/${collectionId}/comments`),
-      orderBy("timestamp", "asc")
-    );
-    onSnapshot(qry, async (querySnapshot) => {
-      let commentsData: any[] = [];
+        documentSnapshot.forEach((doc) => {
+          commentsData.push(doc.data());
+        });
 
-      querySnapshot.forEach((doc) => {
-        commentsData.push(doc.data());
+        // will get information of the commentator
+        let feedDataHolder: any[] = [];
+        await Promise.all(
+          commentsData.map(async (item) => {
+            const userData = await firestore()
+              .collection("users")
+              .doc(item.uid)
+              .get();
+            feedDataHolder.push({
+              ...item,
+              user: userData.data(),
+            });
+          })
+        );
+
+        setComments(feedDataHolder);
       });
 
-      // will get information of the commentator
-      let feedDataHolder: any[] = [];
-      await Promise.all(
-        commentsData.map(async (item) => {
-          let userData = await getDoc(item.userRef);
-          feedDataHolder.push({
-            ...item,
-            user: userData.data(),
-          });
-        })
-      );
-
-      setComments(feedDataHolder);
-    });
-  };
+    // Stop listening for updates when no longer required
+    return () => subscriber();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // will render comment
   const renderComment = ({ item }: any) => {
