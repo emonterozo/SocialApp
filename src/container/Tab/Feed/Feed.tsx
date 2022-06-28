@@ -45,6 +45,7 @@ const Feed = ({ navigation }: IFeed) => {
   useEffect(() => {
     const subscriber = firestore()
       .collection("feed")
+      .orderBy("timestamp", "desc")
       .onSnapshot(async (documentSnapshot) => {
         let feedData: any[] = [];
 

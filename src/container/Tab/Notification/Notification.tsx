@@ -4,7 +4,7 @@ import { Text, Avatar, Caption, Title } from "react-native-paper";
 import moment from "moment";
 import firestore from "@react-native-firebase/firestore";
 
-import { CommentsRegular } from "../../../assets/svg";
+import { BellOutline } from "../../../assets/svg";
 import GlobalContext from "../../../config/context";
 
 import { Header } from "../../../component";
@@ -21,6 +21,7 @@ const Notification = ({ navigation }: INotification) => {
     const subscriber = firestore()
       .collection("notifications")
       .where("post_by", "==", authenticatedUser.uid)
+      .orderBy("timestamp", "desc")
       .onSnapshot(async (documentSnapshot) => {
         let notificationsData: any[] = [];
 
@@ -109,9 +110,8 @@ const Notification = ({ navigation }: INotification) => {
         renderItem={renderNotification}
         ListEmptyComponent={
           <View style={{ alignItems: "center" }}>
-            <CommentsRegular height={100} width={100} color="#777777" />
-            <Title>No comment yet</Title>
-            <Caption>Be the first to comment.</Caption>
+            <BellOutline height={100} width={100} color="#777777" />
+            <Title>No notifications yet</Title>
           </View>
         }
       />

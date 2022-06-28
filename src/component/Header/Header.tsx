@@ -4,12 +4,16 @@ import { Appbar } from "react-native-paper";
 interface IHeader {
   title: string;
   onMenuPress: any;
+  isBack?: boolean;
 }
 
-const Header = ({ title, onMenuPress }: IHeader) => {
+const Header = ({ title, onMenuPress, isBack }: IHeader) => {
   return (
     <Appbar.Header>
-      <Appbar.Action icon="menu" onPress={onMenuPress} />
+      <Appbar.Action
+        icon={isBack ? "arrow-left" : "menu"}
+        onPress={onMenuPress}
+      />
       <Appbar.Content title={title} />
     </Appbar.Header>
   );

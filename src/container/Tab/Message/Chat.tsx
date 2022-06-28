@@ -13,7 +13,7 @@ import firestore from "@react-native-firebase/firestore";
 import GlobalContext from "../../../config/context";
 import { Header } from "../../../component";
 
-const Chat = ({ route }) => {
+const Chat = ({ route, navigation }) => {
   const { authenticatedUser } = useContext(GlobalContext);
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(

@@ -7,6 +7,7 @@ import {
   Subheading,
   TouchableRipple,
   FAB,
+  Title,
 } from "react-native-paper";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
@@ -24,11 +25,10 @@ const Message = ({ navigation }: IMessage) => {
   const [conversation, setConversation] = useState([]);
 
   useEffect(() => {
-    firestore()
+    const subscriber = firestore()
       .collection("messages")
       .where("conversation_between", "array-contains", auth().currentUser?.uid)
-      .get()
-      .then(async (querySnapshot) => {
+      .onSnapshot(async (querySnapshot) => {
         let messagesData: any[] = [];
 
         querySnapshot.forEach((doc) => {
@@ -61,8 +61,10 @@ const Message = ({ navigation }: IMessage) => {
         );
 
         setConversation(messageDataHolder);
-      })
-      .catch((err) => console.log(err));
+      });
+
+    // Stop listening for updates when no longer required
+    return () => subscriber();
   }, []);
 
   const renderCard = ({ item }: any) => {
@@ -101,7 +103,8 @@ const Message = ({ navigation }: IMessage) => {
         ListEmptyComponent={
           <View style={{ alignItems: "center" }}>
             <CommentsRegular height={100} width={100} color="#777777" />
-            <Caption>Be the first to comment.</Caption>
+            <Title>No messages yet.</Title>
+            <Caption>Looks like you haven't initiated a conversation</Caption>
           </View>
         }
       />

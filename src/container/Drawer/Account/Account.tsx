@@ -13,6 +13,7 @@ import GlobalContext from "../../../config/context";
 import { Header, CTextInput, UploadDialog } from "../../../component";
 import { theme } from "../../../styles/theme";
 import { setUserData } from "../../../utils/utils";
+import ChangePassword from "./ChangePassword";
 
 interface IAccount {
   navigation: any;
@@ -42,6 +43,7 @@ const Account = ({ navigation }: IAccount) => {
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isUploadDialogVisible, setIsUploadDialogVisible] = useState(false);
   const [imageSource, setImageSource] = useState<string | null>(null);
+  const [isChangePasswordVisible, setIsChangePasswordVisible] = useState(false);
 
   // will open camera
   const handleOpenCamera = () => {
@@ -189,7 +191,12 @@ const Account = ({ navigation }: IAccount) => {
           >
             Upload Photo
           </Button>
-          <Button style={styles.optionButton} mode="outlined" uppercase={false}>
+          <Button
+            style={styles.optionButton}
+            mode="outlined"
+            uppercase={false}
+            onPress={() => setIsChangePasswordVisible(true)}
+          >
             Change Password
           </Button>
         </View>
@@ -246,6 +253,12 @@ const Account = ({ navigation }: IAccount) => {
         </Formik>
       </ScrollView>
       <Portal>
+        {isChangePasswordVisible && (
+          <ChangePassword
+            navigation={navigation}
+            setIsChangePasswordVisible={setIsChangePasswordVisible}
+          />
+        )}
         {isUploadDialogVisible && (
           <UploadDialog
             handleHideDialog={() => setIsUploadDialogVisible(false)}
